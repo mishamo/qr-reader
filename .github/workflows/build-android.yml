@@ -1,0 +1,63 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+    
+    - name: Install Fyne
+      run: go install fyne.io/tools/cmd/fyne@latest
+    
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v2
+    
+    - name: Install Android NDK
+      run: |
+        sdkmanager --install "ndk;25.2.9519653"
+        echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
+    
+    - name: Build APK
+      run: |
+        fyne package \
+          --target android \
+          --app-id com.qorda.qrscanner \
+          --name "QR Scanner" \
+          --icon Icon.png \
+          --release
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: qr-scanner-apk
+        path: "*.apk"
+        retention-days: 30
+    
+    - name: Create Release (on master branch)
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "*.apk"
+        tag_name: v${{ github.run_number }}
+        name: Build ${{ github.run_number }}
+        body: |
+          Automated build from commit ${{ github.sha }}
+          
+          Download the APK and install on your Android device.
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

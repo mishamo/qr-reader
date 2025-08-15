@@ -1,0 +1,49 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# Build output
+qr-scanner-app
+QR Scanner.apk
+*.apk
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files
+.env
+.env.local
+
+# Credentials (IMPORTANT - never commit these)
+credentials.json
+client_secret*.json
+token.json
+
+# Fyne bundle
+bundled.go
+
+# Test files
+test_*.go
+
+# Icon creation script output (keep Icon.png)
+create_icon.go
