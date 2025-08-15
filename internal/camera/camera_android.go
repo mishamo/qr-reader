@@ -3,20 +3,14 @@
 
 package camera
 
-/*
-#include <jni.h>
-#include <stdlib.h>
-*/
-import "C"
-
 import (
 	"fmt"
 	"image"
 	"sync"
-
-	"fyne.io/fyne/v2/driver/mobile"
 )
 
+// AndroidCamera provides a mock camera implementation for Android
+// Real camera access requires platform-specific bindings
 type AndroidCamera struct {
 	mu         sync.Mutex
 	isActive   bool
@@ -25,7 +19,9 @@ type AndroidCamera struct {
 }
 
 func NewCamera() Camera {
-	return &AndroidCamera{}
+	return &AndroidCamera{
+		permission: true, // Auto-grant for now
+	}
 }
 
 func (c *AndroidCamera) Start(onFrame func(image.Image)) error {
@@ -36,18 +32,14 @@ func (c *AndroidCamera) Start(onFrame func(image.Image)) error {
 		return fmt.Errorf("camera already active")
 	}
 
-	if !c.checkPermission() {
+	if !c.permission {
 		return fmt.Errorf("camera permission not granted")
 	}
 
 	c.onFrame = onFrame
 	c.isActive = true
 
-	if err := c.startNativeCamera(); err != nil {
-		c.isActive = false
-		return err
-	}
-
+	// Mock implementation - real camera requires JNI bindings
 	return nil
 }
 
@@ -60,7 +52,7 @@ func (c *AndroidCamera) Stop() error {
 	}
 
 	c.isActive = false
-	return c.stopNativeCamera()
+	return nil
 }
 
 func (c *AndroidCamera) IsActive() bool {
@@ -70,27 +62,8 @@ func (c *AndroidCamera) IsActive() bool {
 }
 
 func (c *AndroidCamera) RequestPermission() error {
-	app := mobile.CurrentApp()
-	if app == nil {
-		return fmt.Errorf("mobile app not available")
-	}
-
+	// Permissions should be handled in AndroidManifest.xml
+	// and requested through the Android system
 	c.permission = true
 	return nil
-}
-
-func (c *AndroidCamera) checkPermission() bool {
-	return c.permission
-}
-
-func (c *AndroidCamera) startNativeCamera() error {
-	return nil
-}
-
-func (c *AndroidCamera) stopNativeCamera() error {
-	return nil
-}
-
-//export Java_com_qorda_qrscanner_CameraCallback_onFrame
-func Java_com_qorda_qrscanner_CameraCallback_onFrame(env *C.JNIEnv, class C.jobject, data C.jbyteArray) {
 }
