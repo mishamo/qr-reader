@@ -36,12 +36,7 @@ jobs:
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       run: |
-        fyne package \
-          --target android \
-          --app-id com.mishamo.qrreader \
-          --name "QR Scanner" \
-          --icon Icon.png \
-          --release
+        fyne package --target android --release
     
     - name: Create Release
       uses: softprops/action-gh-release@v1

@@ -35,13 +35,8 @@ jobs:
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       run: |
-        # Package with Fyne (credentials are read from environment)
-        fyne package \
-          --target android \
-          --app-id com.mishamo.qrreader \
-          --name "QR Scanner" \
-          --icon Icon.png \
-          --release
+        # Package with Fyne using FyneApp.toml configuration
+        fyne package --target android --release
     
     - name: Upload APK
       uses: actions/upload-artifact@v4

@@ -33,12 +33,7 @@ echo ""
 
 # Build the APK
 echo "Building APK..."
-fyne package \
-    --target android \
-    --app-id com.mishamo.qrreader \
-    --name "QR Scanner" \
-    --icon Icon.png \
-    --release
+fyne package --target android --release
 
 if [ $? -eq 0 ]; then
     echo ""

@@ -58,11 +58,7 @@ clean:
 
 # Build Android APK (requires Android SDK/NDK)
 build-android:
-	fyne package --target android \
-		--app-id com.mishamo.qrreader \
-		--name "QR Scanner" \
-		--icon Icon.png \
-		--release
+	fyne package --target android --release
 
 # Build for all platforms
 build-all: build build-android
