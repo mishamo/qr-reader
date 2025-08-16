@@ -35,13 +35,7 @@ jobs:
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       run: |
-        # Inject credentials at build time using ldflags
-        go build -ldflags "\
-          -X github.com/mishamo/qr-reader/internal/auth.buildTimeClientID=${{ secrets.GOOGLE_CLIENT_ID }} \
-          -X github.com/mishamo/qr-reader/internal/auth.buildTimeClientSecret=${{ secrets.GOOGLE_CLIENT_SECRET }}" \
-          -o qr-scanner-temp main.go
-        
-        # Package with Fyne
+        # Package with Fyne (credentials are read from environment)
         fyne package \
           --target android \
           --app-id com.mishamo.qrreader \
