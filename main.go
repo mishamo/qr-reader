@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -65,34 +64,12 @@ func (a *QRScannerApp) showLoginScreen() {
 	welcome.Alignment = fyne.TextAlignCenter
 	welcome.TextStyle = fyne.TextStyle{Bold: true}
 
-	// Check if we have credentials.json (service account mode)
-	if _, err := os.Stat("credentials.json"); err == nil {
-		description := widget.NewLabel("Initializing with service account...")
-		description.Alignment = fyne.TextAlignCenter
-		
-		content := container.NewVBox(
-			widget.NewLabel(""),
-			welcome,
-			description,
-		)
-		a.window.SetContent(container.NewPadded(content))
-		
-		// Auto-authenticate with service account
-		go func() {
-			if err := a.authManager.Authenticate(); err != nil {
-				log.Printf("Service account init failed: %v", err)
-				a.showError("Service account init failed", err)
-				return
-			}
-			a.showMainScreen()
-		}()
-		return
-	}
-
-	// OAuth mode
-	description := widget.NewLabel("Sign in with Google to sync scans to Google Sheets")
+	description := widget.NewLabel("Sign in with your Google account to start scanning")
 	description.Alignment = fyne.TextAlignCenter
 	description.Wrapping = fyne.TextWrapWord
+
+	features := widget.NewLabel("✓ Create sheets in your Google Drive\n✓ Share sheets with your team\n✓ Everyone scans to the same sheet")
+	features.Alignment = fyne.TextAlignCenter
 
 	loginBtn := widget.NewButton("Sign in with Google", func() {
 		go func() {
@@ -111,6 +88,8 @@ func (a *QRScannerApp) showLoginScreen() {
 		widget.NewLabel(""), 
 		welcome,
 		description,
+		widget.NewLabel(""),
+		features,
 		widget.NewLabel(""),
 		container.NewCenter(loginBtn),
 	)
@@ -165,33 +144,37 @@ func (a *QRScannerApp) createSheetsTab() fyne.CanvasObject {
 		a.currentSheetLabel.SetText("Active: " + sheet.Name)
 	}
 
-	instructionsLabel := widget.NewLabel("To use this app:\n1. Create a Google Sheet at sheets.new\n2. Share it with:\n   qr-scanner@misha-project-469120.iam.gserviceaccount.com\n3. Click 'Select Sheet' below")
-	instructionsLabel.Wrapping = fyne.TextWrapWord
+	createBtn := widget.NewButton("Create New Sheet", func() {
+		a.showCreateSheetDialog()
+	})
+	createBtn.Importance = widget.HighImportance
 
-	selectBtn := widget.NewButton("Select Sheet", func() {
+	selectBtn := widget.NewButton("Select Existing Sheet", func() {
 		a.showSelectSheetDialog()
 	})
-	selectBtn.Importance = widget.HighImportance
 
-	// Hardcode your test sheet for now
-	useTestSheetBtn := widget.NewButton("Use Test Sheet", func() {
-		testSheet := &sheets.Sheet{
-			ID:   "1y6iMUDynDcKvoX4x29yoqUSRvwVcyRSAWBYHa35hZGA",
-			Name: "QR Scanner Test Sheet",
-			URL:  "https://docs.google.com/spreadsheets/d/1y6iMUDynDcKvoX4x29yoqUSRvwVcyRSAWBYHa35hZGA",
+	shareBtn := widget.NewButton("Share Current Sheet", func() {
+		if sheet := a.sheetManager.GetActiveSheet(); sheet != nil {
+			a.showShareDialog(sheet)
+		} else {
+			a.showError("No Sheet Selected", fmt.Errorf("Please select or create a sheet first"))
 		}
-		a.sheetManager.SetActiveSheet(testSheet)
-		a.currentSheetLabel.SetText("Active: " + testSheet.Name)
-		a.showSuccess("Sheet Selected", "Using test sheet for scanning")
 	})
+
+	instructionsLabel := widget.NewLabel("How to collaborate:\n1. Create or select a sheet\n2. Share it with team members\n3. They sign in with their Google account\n4. Everyone selects the same sheet\n5. All scans go to the shared sheet!")
+	instructionsLabel.Wrapping = fyne.TextWrapWord
 
 	return container.NewVBox(
 		widget.NewCard("Current Sheet", "", a.currentSheetLabel),
 		widget.NewLabel(""),
-		widget.NewCard("Instructions", "", instructionsLabel),
+		container.NewGridWithColumns(2,
+			createBtn,
+			selectBtn,
+		),
 		widget.NewLabel(""),
-		selectBtn,
-		useTestSheetBtn,
+		shareBtn,
+		widget.NewLabel(""),
+		widget.NewCard("Collaboration", "", instructionsLabel),
 	)
 }
 
@@ -257,11 +240,7 @@ func (a *QRScannerApp) startScanning() {
 
 func (a *QRScannerApp) showCreateSheetDialog() {
 	nameEntry := widget.NewEntry()
-	nameEntry.SetPlaceHolder("Sheet Name")
-
-	dialog := widget.NewForm(
-		widget.NewFormItem("Name", nameEntry),
-	)
+	nameEntry.SetPlaceHolder("My Conference Scans")
 
 	var popup *widget.PopUp
 	
@@ -272,8 +251,13 @@ func (a *QRScannerApp) showCreateSheetDialog() {
 				if err := a.sheetManager.CreateSheet(nameEntry.Text); err != nil {
 					a.showError("Failed to create sheet", err)
 				} else {
-					a.showSuccess("Success", "Sheet created successfully")
-					a.window.Content().Refresh()
+					if a.currentSheetLabel != nil {
+						sheet := a.sheetManager.GetActiveSheet()
+						if sheet != nil {
+							a.currentSheetLabel.SetText("Active: " + sheet.Name)
+						}
+					}
+					a.showSuccess("Sheet Created!", "Your sheet is ready for scanning")
 				}
 			}()
 		}
@@ -286,7 +270,8 @@ func (a *QRScannerApp) showCreateSheetDialog() {
 	popup = widget.NewModalPopUp(
 		container.NewVBox(
 			widget.NewLabel("Create New Sheet"),
-			dialog,
+			widget.NewLabel("This will create a sheet in your Google Drive"),
+			nameEntry,
 			container.NewGridWithColumns(2, cancelBtn, confirmBtn),
 		),
 		a.window.Canvas(),
@@ -356,6 +341,40 @@ func (a *QRScannerApp) showError(title string, err error) {
 		a.window.Canvas(),
 	)
 	dialog.Show()
+}
+
+func (a *QRScannerApp) showShareDialog(sheet *sheets.Sheet) {
+	var popup *widget.PopUp
+	
+	urlEntry := widget.NewEntry()
+	urlEntry.SetText(sheet.URL)
+	urlEntry.Disable()
+	
+	copyBtn := widget.NewButton("Copy Link", func() {
+		a.window.Clipboard().SetContent(sheet.URL)
+		a.showSuccess("Copied!", "Sheet link copied to clipboard")
+	})
+	
+	instructions := widget.NewLabel("To share this sheet:\n1. Open the link in Google Sheets\n2. Click Share button\n3. Add team members' email addresses\n4. They can then use this app to scan")
+	instructions.Wrapping = fyne.TextWrapWord
+	
+	popup = widget.NewModalPopUp(
+		container.NewVBox(
+			widget.NewLabel("Share Sheet: " + sheet.Name),
+			widget.NewLabel(""),
+			widget.NewLabel("Sheet URL:"),
+			urlEntry,
+			copyBtn,
+			widget.NewLabel(""),
+			instructions,
+			widget.NewLabel(""),
+			widget.NewButton("Close", func() {
+				popup.Hide()
+			}),
+		),
+		a.window.Canvas(),
+	)
+	popup.Show()
 }
 
 func (a *QRScannerApp) showSuccess(title, message string) {

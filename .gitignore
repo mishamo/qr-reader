@@ -34,9 +34,8 @@ QR Scanner.apk
 .env
 .env.local
 
-# Credentials (IMPORTANT - never commit these)
-credentials.json
-client_secret*.json
+# OAuth tokens (stored locally on device)
+oauth_token.json
 token.json
 
 # Fyne bundle

@@ -1,41 +1,73 @@
-.PHONY: deps run build-android install-android clean test
+.PHONY: build run test clean install-tools build-android
 
-APP_ID = com.qorda.qrscanner
-APP_NAME = QRScanner
+# Default target
+all: build
 
+# Install development tools
+install-tools:
+	go install fyne.io/tools/cmd/fyne@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+# Install dependencies
 deps:
 	go mod download
 	go mod tidy
 
+# Build for current platform
+build:
+	go build -o qr-scanner main.go
+
+# Run the application
 run:
 	go run main.go
 
-build-android:
-	fyne package -os android -appID $(APP_ID) -name $(APP_NAME) -release
-
-build-android-debug:
-	fyne package -os android -appID $(APP_ID) -name $(APP_NAME)
-
-install-android:
-	adb install -r $(APP_NAME).apk
-
-install-fyne:
-	go install fyne.io/fyne/v2/cmd/fyne@latest
-
-build-ios:
-	fyne package -os ios -appID $(APP_ID) -name $(APP_NAME)
-
+# Run tests
 test:
 	go test ./...
 
-clean:
-	rm -f $(APP_NAME).apk
-	rm -f $(APP_NAME).aab
-	rm -rf build/
+# Run tests with coverage
+test-coverage:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
 
+# Format code
 format:
 	go fmt ./...
-	goimports -w .
+	gofmt -s -w .
 
-run-mobile-sim:
+# Lint code
+lint:
+	golangci-lint run
+
+# Clean build artifacts
+clean:
+	rm -f qr-scanner
+	rm -f QR_Scanner.apk
+	rm -f coverage.out
+	rm -rf apk-download
+
+# Build Android APK (requires Android SDK/NDK)
+build-android:
+	fyne package --target android \
+		--app-id com.qorda.qrscanner \
+		--name "QR Scanner" \
+		--icon Icon.png \
+		--release
+
+# Build for all platforms
+build-all: build build-android
+
+# Run on mobile simulator
+run-mobile:
 	go run -tags mobile main.go
+
+# Help target
+help:
+	@echo "Available targets:"
+	@echo "  make              - Build for current platform"
+	@echo "  make run          - Run the application"
+	@echo "  make test         - Run tests"
+	@echo "  make build-android - Build Android APK"
+	@echo "  make clean        - Clean build artifacts"
+	@echo "  make install-tools - Install development tools"
+	@echo "  make help         - Show this help message"

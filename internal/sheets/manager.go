@@ -64,9 +64,53 @@ func (m *Manager) ensureServices() error {
 }
 
 func (m *Manager) CreateSheet(name string) error {
-	// Service accounts can't create sheets due to Drive storage limitations
-	// Instead, return an informative error
-	return fmt.Errorf("service accounts cannot create new sheets. Please create a sheet manually in Google Drive and share it with: qr-scanner@misha-project-469120.iam.gserviceaccount.com")
+	if err := m.ensureServices(); err != nil {
+		return err
+	}
+
+	// Create the spreadsheet using Sheets API
+	spreadsheet := &sheets.Spreadsheet{
+		Properties: &sheets.SpreadsheetProperties{
+			Title: name,
+		},
+		Sheets: []*sheets.Sheet{
+			{
+				Properties: &sheets.SheetProperties{
+					Title: "Scans",
+				},
+			},
+		},
+	}
+
+	createdSheet, err := m.service.Spreadsheets.Create(spreadsheet).Do()
+	if err != nil {
+		return fmt.Errorf("failed to create sheet: %w", err)
+	}
+
+	// Set up the header row
+	headers := []interface{}{"Timestamp", "Data", "Scanned By", "Raw Data"}
+	valueRange := &sheets.ValueRange{
+		Values: [][]interface{}{headers},
+	}
+
+	_, err = m.service.Spreadsheets.Values.Update(
+		createdSheet.SpreadsheetId,
+		"Scans!A1:D1",
+		valueRange,
+	).ValueInputOption("RAW").Do()
+	if err != nil {
+		return fmt.Errorf("failed to set headers: %w", err)
+	}
+
+	// Store as active sheet
+	m.activeSheet = &Sheet{
+		ID:   createdSheet.SpreadsheetId,
+		Name: name,
+		URL:  createdSheet.SpreadsheetUrl,
+	}
+
+	fmt.Printf("Created sheet: %s\n", createdSheet.SpreadsheetUrl)
+	return nil
 }
 
 func (m *Manager) ShareSheet(sheetID string, email string) error {
@@ -112,13 +156,13 @@ func (m *Manager) ListSheets() ([]*Sheet, error) {
 		return nil, err
 	}
 
-	// List sheets that the service account has access to
-	// This will include sheets shared with the service account
+	// List all spreadsheets the user has access to (owned or shared)
 	query := "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false"
 	fileList, err := m.driveService.Files.List().
 		Q(query).
-		Fields("files(id, name, webViewLink)").
+		Fields("files(id, name, webViewLink, owners, capabilities)").
 		PageSize(100).
+		OrderBy("modifiedTime desc").
 		Do()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list sheets: %w", err)
@@ -126,19 +170,31 @@ func (m *Manager) ListSheets() ([]*Sheet, error) {
 
 	var sheets []*Sheet
 	for _, file := range fileList.Files {
-		sheets = append(sheets, &Sheet{
+		sheet := &Sheet{
 			ID:   file.Id,
 			Name: file.Name,
 			URL:  file.WebViewLink,
-		})
+		}
+		
+		// Add ownership info to the name for clarity
+		if file.Owners != nil && len(file.Owners) > 0 {
+			owner := file.Owners[0]
+			if owner.Me {
+				sheet.Name = fmt.Sprintf("📄 %s (My Sheet)", file.Name)
+			} else {
+				sheet.Name = fmt.Sprintf("👥 %s (Shared by %s)", file.Name, owner.DisplayName)
+			}
+		}
+		
+		sheets = append(sheets, sheet)
 	}
 	
 	// If no sheets found, provide helpful message
 	if len(sheets) == 0 {
-		fmt.Println("No sheets found. To use this app:")
-		fmt.Println("1. Create a Google Sheet at: https://sheets.new")
-		fmt.Println("2. Share it with: qr-scanner@misha-project-469120.iam.gserviceaccount.com")
-		fmt.Println("3. Reload this app to see the sheet")
+		fmt.Println("No sheets found. You can:")
+		fmt.Println("1. Create a new sheet using the app")
+		fmt.Println("2. Or create one at: https://sheets.new")
+		fmt.Println("3. Or ask someone to share their sheet with you")
 	}
 
 	return sheets, nil
