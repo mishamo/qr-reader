@@ -1,0 +1,59 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+    
+    - name: Install Fyne
+      run: go install fyne.io/tools/cmd/fyne@latest
+    
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v2
+    
+    - name: Install Android NDK
+      run: |
+        sdkmanager --install "ndk;25.2.9519653"
+        echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
+    
+    - name: Build APK
+      env:
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      run: |
+        fyne package \
+          --target android \
+          --app-id com.mishamo.qrreader \
+          --name "QR Scanner" \
+          --icon Icon.png \
+          --release
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: QR_Scanner.apk
+        body: |
+          ## 📱 QR Scanner Release
+          
+          ### Installation
+          1. Download **QR_Scanner.apk** below
+          2. Open on your Android device
+          3. Enable "Unknown Sources" if prompted
+          4. Install and enjoy!
+          
+          ### What's New
+          See [commits](https://github.com/mishamo/qr-reader/commits/${{ github.ref_name }}) for changes.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
