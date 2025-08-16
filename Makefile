@@ -58,6 +58,9 @@ clean:
 
 # Build Android APK (requires Android SDK/NDK)
 build-android:
+	@if [ -f .env ]; then \
+		./generate_credentials.sh; \
+	fi
 	fyne package --target android --release
 
 # Build for all platforms

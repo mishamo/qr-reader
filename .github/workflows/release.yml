@@ -36,6 +36,17 @@ jobs:
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       run: |
+        # Create credentials file for embedding
+        cat > internal/auth/credentials.go << EOF
+        package auth
+        
+        func init() {
+            buildTimeClientID = "${{ secrets.GOOGLE_CLIENT_ID }}"
+            buildTimeClientSecret = "${{ secrets.GOOGLE_CLIENT_SECRET }}"
+        }
+        EOF
+        
+        # Package with Fyne
         fyne package --target android --release
     
     - name: Create Release

@@ -43,6 +43,9 @@ duplicate_mode
 active_sheet
 user_email
 
+# Generated credentials file (contains secrets)
+internal/auth/credentials.go
+
 # Fyne bundle
 bundled.go
 
