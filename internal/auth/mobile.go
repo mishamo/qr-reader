@@ -18,6 +18,3 @@ func parseURL(urlStr string) *url.URL {
 	u, _ := url.Parse(urlStr)
 	return u
 }
-
-// parseURL is kept for mobile browser opening
-// The localhost redirect approach is now used for both desktop and mobile
