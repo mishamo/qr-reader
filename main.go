@@ -46,7 +46,7 @@ func main() {
 }
 
 func (a *QRScannerApp) setupManagers() {
-	a.authManager = auth.NewManager(a.storage)
+	a.authManager = auth.NewManager(a.storage, a.app)
 	a.sheetManager = sheets.NewManager(a.authManager)
 	a.scanner = scanner.NewScanner(a.sheetManager)
 }
@@ -73,7 +73,14 @@ func (a *QRScannerApp) showLoginScreen() {
 
 	loginBtn := widget.NewButton("Sign in with Google", func() {
 		go func() {
-			if err := a.authManager.Authenticate(); err != nil {
+			err := a.authManager.Authenticate()
+			if err != nil {
+				// Check if it's a mobile auth error
+				if _, ok := err.(*auth.MobileAuthError); ok {
+					// Show code entry dialog for mobile
+					a.showMobileAuthDialog()
+					return
+				}
 				log.Printf("Authentication failed: %v", err)
 				a.showError("Authentication failed", err)
 				return
@@ -389,5 +396,59 @@ func (a *QRScannerApp) showSuccess(title, message string) {
 		),
 		a.window.Canvas(),
 	)
+	dialog.Show()
+}
+
+func (a *QRScannerApp) showMobileAuthDialog() {
+	var dialog *widget.PopUp
+	
+	instructions := widget.NewLabel("1. Sign in to Google in your browser\n2. Approve the app permissions\n3. Copy the authorization code\n4. Paste it below:")
+	instructions.Wrapping = fyne.TextWrapWord
+	
+	codeEntry := widget.NewEntry()
+	codeEntry.SetPlaceHolder("Enter authorization code")
+	
+	submitBtn := widget.NewButton("Submit Code", func() {
+		code := codeEntry.Text
+		if code == "" {
+			a.showError("Invalid Code", fmt.Errorf("Please enter the authorization code"))
+			return
+		}
+		
+		dialog.Hide()
+		
+		// Exchange the code in a goroutine
+		go func() {
+			if err := a.authManager.ExchangeCode(code); err != nil {
+				log.Printf("Code exchange failed: %v", err)
+				a.showError("Authentication failed", err)
+				return
+			}
+			a.window.Canvas().Content().Refresh()
+			a.showMainScreen()
+		}()
+	})
+	submitBtn.Importance = widget.HighImportance
+	
+	cancelBtn := widget.NewButton("Cancel", func() {
+		dialog.Hide()
+	})
+	
+	dialog = widget.NewModalPopUp(
+		container.NewVBox(
+			widget.NewLabel("Complete Sign In"),
+			widget.NewLabel(""),
+			instructions,
+			widget.NewLabel(""),
+			codeEntry,
+			widget.NewLabel(""),
+			container.NewGridWithColumns(2,
+				cancelBtn,
+				submitBtn,
+			),
+		),
+		a.window.Canvas(),
+	)
+	dialog.Resize(fyne.NewSize(350, 300))
 	dialog.Show()
 }

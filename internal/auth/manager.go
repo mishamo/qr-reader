@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime"
 	"time"
 
+	"fyne.io/fyne/v2"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
@@ -26,6 +28,7 @@ type Manager struct {
 	storage  *storage.Storage
 	client   *http.Client
 	userInfo *UserInfo
+	app      fyne.App  // Added for mobile URL handling
 }
 
 type UserInfo struct {
@@ -34,7 +37,7 @@ type UserInfo struct {
 	Picture string `json:"picture"`
 }
 
-func NewManager(store *storage.Storage) *Manager {
+func NewManager(store *storage.Storage, app fyne.App) *Manager {
 	clientID, clientSecret := GetOAuthConfig()
 	
 	config := &oauth2.Config{
@@ -53,6 +56,7 @@ func NewManager(store *storage.Storage) *Manager {
 	m := &Manager{
 		config:  config,
 		storage: store,
+		app:     app,
 	}
 
 	m.loadStoredToken()
@@ -67,6 +71,14 @@ func (m *Manager) IsAuthenticated() bool {
 }
 
 func (m *Manager) Authenticate() error {
+	// Check if we're on Android and use a different flow
+	if runtime.GOOS == "android" {
+		return m.authenticateMobile()
+	}
+	return m.authenticateDesktop()
+}
+
+func (m *Manager) authenticateDesktop() error {
 	codeChan := make(chan string, 1)
 	errChan := make(chan error, 1)
 
@@ -141,6 +153,27 @@ func (m *Manager) Authenticate() error {
 		server.Shutdown(context.Background())
 		return fmt.Errorf("authentication timeout")
 	}
+}
+
+func (m *Manager) authenticateMobile() error {
+	// For mobile, we'll use a different approach with manual code entry
+	// Generate the auth URL without the redirect
+	authURL := m.config.AuthCodeURL("state", 
+		oauth2.AccessTypeOffline, 
+		oauth2.ApprovalForce,
+		oauth2.SetAuthURLParam("redirect_uri", "urn:ietf:wg:oauth:2.0:oob"))
+	
+	// Open the URL in the system browser
+	if m.app != nil {
+		if err := m.app.OpenURL(parseURL(authURL)); err != nil {
+			return fmt.Errorf("failed to open browser: %w", err)
+		}
+	} else {
+		return fmt.Errorf("app reference not available")
+	}
+	
+	// Return a special error that the UI can handle to show a code entry dialog
+	return &MobileAuthError{AuthURL: authURL}
 }
 
 func (m *Manager) GetClient() *http.Client {
