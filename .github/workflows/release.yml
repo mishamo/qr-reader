@@ -53,11 +53,15 @@ jobs:
         echo "Building with FyneApp.toml:"
         cat FyneApp.toml
         fyne package --target android --release --app-id com.mishamo.qrreader
+        
+        # List generated files
+        echo "Generated files:"
+        ls -la *.apk || echo "No APK files found"
     
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: "QR Scanner.apk"
+        files: "*.apk"
         body: |
           ## 📱 QR Scanner Release
           
