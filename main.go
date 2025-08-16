@@ -73,14 +73,7 @@ func (a *QRScannerApp) showLoginScreen() {
 
 	loginBtn := widget.NewButton("Sign in with Google", func() {
 		go func() {
-			err := a.authManager.Authenticate()
-			if err != nil {
-				// Check if it's a mobile auth error
-				if _, ok := err.(*auth.MobileAuthError); ok {
-					// Show code entry dialog for mobile
-					a.showMobileAuthDialog()
-					return
-				}
+			if err := a.authManager.Authenticate(); err != nil {
 				log.Printf("Authentication failed: %v", err)
 				a.showError("Authentication failed", err)
 				return
@@ -399,6 +392,9 @@ func (a *QRScannerApp) showSuccess(title, message string) {
 	dialog.Show()
 }
 
+// showMobileAuthDialog is kept for future use if needed
+// Currently using localhost redirect for both desktop and mobile
+/*
 func (a *QRScannerApp) showMobileAuthDialog() {
 	var dialog *widget.PopUp
 	
@@ -452,3 +448,4 @@ func (a *QRScannerApp) showMobileAuthDialog() {
 	dialog.Resize(fyne.NewSize(350, 300))
 	dialog.Show()
 }
+*/

@@ -79,6 +79,10 @@ func (m *Manager) Authenticate() error {
 }
 
 func (m *Manager) authenticateDesktop() error {
+	return m.authenticateWithLocalServer(false)
+}
+
+func (m *Manager) authenticateWithLocalServer(isMobile bool) error {
 	codeChan := make(chan string, 1)
 	errChan := make(chan error, 1)
 
@@ -116,8 +120,16 @@ func (m *Manager) authenticateDesktop() error {
 
 	authURL := m.config.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 	
-	if err := openBrowser(authURL); err != nil {
-		return fmt.Errorf("failed to open browser: %w", err)
+	if isMobile && m.app != nil {
+		// On mobile, use the app's OpenURL method
+		if err := m.app.OpenURL(parseURL(authURL)); err != nil {
+			return fmt.Errorf("failed to open browser: %w", err)
+		}
+	} else {
+		// On desktop, use the system browser
+		if err := openBrowser(authURL); err != nil {
+			return fmt.Errorf("failed to open browser: %w", err)
+		}
 	}
 
 	select {
@@ -156,24 +168,9 @@ func (m *Manager) authenticateDesktop() error {
 }
 
 func (m *Manager) authenticateMobile() error {
-	// For mobile, we'll use a different approach with manual code entry
-	// Generate the auth URL without the redirect
-	authURL := m.config.AuthCodeURL("state", 
-		oauth2.AccessTypeOffline, 
-		oauth2.ApprovalForce,
-		oauth2.SetAuthURLParam("redirect_uri", "urn:ietf:wg:oauth:2.0:oob"))
-	
-	// Open the URL in the system browser
-	if m.app != nil {
-		if err := m.app.OpenURL(parseURL(authURL)); err != nil {
-			return fmt.Errorf("failed to open browser: %w", err)
-		}
-	} else {
-		return fmt.Errorf("app reference not available")
-	}
-	
-	// Return a special error that the UI can handle to show a code entry dialog
-	return &MobileAuthError{AuthURL: authURL}
+	// Use the same localhost approach as desktop
+	// Mobile browsers can redirect to localhost
+	return m.authenticateWithLocalServer(true)
 }
 
 func (m *Manager) GetClient() *http.Client {
