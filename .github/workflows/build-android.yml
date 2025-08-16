@@ -31,7 +31,17 @@ jobs:
         echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
     
     - name: Build APK
+      env:
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       run: |
+        # Inject credentials at build time using ldflags
+        go build -ldflags "\
+          -X github.com/qorda/qr-scanner/internal/auth.buildTimeClientID=${{ secrets.GOOGLE_CLIENT_ID }} \
+          -X github.com/qorda/qr-scanner/internal/auth.buildTimeClientSecret=${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+          -o qr-scanner-temp main.go
+        
+        # Package with Fyne
         fyne package \
           --target android \
           --app-id com.qorda.qrscanner \

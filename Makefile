@@ -15,11 +15,21 @@ deps:
 
 # Build for current platform
 build:
-	go build -o qr-scanner main.go
+	@if [ -f .env ]; then \
+		export $$(cat .env | xargs) && go build -o qr-scanner main.go; \
+	else \
+		go build -o qr-scanner main.go; \
+	fi
 
 # Run the application
 run:
-	go run main.go
+	@if [ -f .env ]; then \
+		export $$(cat .env | xargs) && go run main.go; \
+	else \
+		echo "⚠️  No .env file found. Run ./setup_credentials.sh first!"; \
+		echo ""; \
+		go run main.go; \
+	fi
 
 # Run tests
 test:

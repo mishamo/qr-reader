@@ -35,9 +35,11 @@ type UserInfo struct {
 }
 
 func NewManager(store *storage.Storage) *Manager {
+	clientID, clientSecret := GetOAuthConfig()
+	
 	config := &oauth2.Config{
-		ClientID:     getClientID(),
-		ClientSecret: getClientSecret(),
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
 		RedirectURL:  redirectURL,
 		Scopes: []string{
 			sheets.SpreadsheetsScope,
@@ -232,13 +234,3 @@ func (m *Manager) SignOut() {
 	m.storage.Delete("oauth_token")
 }
 
-// OAuth Credentials - Replace these with your actual credentials
-func getClientID() string {
-	// TODO: Replace with your OAuth Client ID from Google Cloud Console
-	return "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
-}
-
-func getClientSecret() string {
-	// TODO: Replace with your OAuth Client Secret from Google Cloud Console
-	return "YOUR_GOOGLE_CLIENT_SECRET"
-}

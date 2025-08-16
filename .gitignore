@@ -30,9 +30,10 @@ QR Scanner.apk
 *~
 .DS_Store
 
-# Environment files
+# Environment files (contains OAuth secrets)
 .env
 .env.local
+.env.backup
 
 # OAuth tokens (stored locally on device)
 oauth_token.json
