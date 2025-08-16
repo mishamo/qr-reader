@@ -52,7 +52,7 @@ jobs:
         # Package with Fyne
         echo "Building with FyneApp.toml:"
         cat FyneApp.toml
-        fyne package --target android --release
+        fyne package --target android --release --app-id com.mishamo.qrreader
     
     - name: Create Release
       uses: softprops/action-gh-release@v1
