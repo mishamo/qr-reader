@@ -1,10 +1,9 @@
-[Details]
-  Icon = "Icon.png"
-  Name = "QR Scanner"
-  ID = "com.mishamo.qrreader"
-  Version = "1.0.2"
-  Build = 2
+AppID = "com.mishamo.qrreader"
+Icon = "Icon.png"
+Name = "QR Scanner"
+Version = "1.0.5"
+Build = 5
 
-[Android]
-  MinSDK = 21
-  TargetSDK = 33
+[AndroidSettings]
+MinSdk = 28
+TargetSdk = 33

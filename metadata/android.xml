@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AndroidManifest>
+    <MinSDK>28</MinSDK>
+    <TargetSDK>33</TargetSDK>
+    <VersionCode>5</VersionCode>
+    <VersionName>1.0.5</VersionName>
+    <Permissions>
+        <Permission>android.permission.INTERNET</Permission>
+        <Permission>android.permission.CAMERA</Permission>
+        <Permission>android.permission.ACCESS_NETWORK_STATE</Permission>
+    </Permissions>
+</AndroidManifest>

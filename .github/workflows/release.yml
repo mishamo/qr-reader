@@ -21,7 +21,10 @@ jobs:
         go-version: '1.21'
     
     - name: Install Fyne
-      run: go install fyne.io/tools/cmd/fyne@latest
+      run: |
+        go install fyne.io/tools/cmd/fyne@latest
+        echo "Fyne version:"
+        fyne version
     
     - name: Set up Android SDK
       uses: android-actions/setup-android@v2
@@ -47,6 +50,8 @@ jobs:
         EOF
         
         # Package with Fyne
+        echo "Building with FyneApp.toml:"
+        cat FyneApp.toml
         fyne package --target android --release
     
     - name: Create Release
