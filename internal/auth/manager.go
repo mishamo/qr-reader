@@ -104,7 +104,7 @@ func (m *Manager) Authenticate() error {
 
 	authURL := m.config.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 	
-	if err := OpenBrowser(authURL); err != nil {
+	if err := openBrowser(authURL); err != nil {
 		return fmt.Errorf("failed to open browser: %w", err)
 	}
 
@@ -211,14 +211,15 @@ func (m *Manager) storeToken() error {
 		return err
 	}
 
-	return m.storage.SetBytes("oauth_token", tokenJSON)
+	return m.storage.SaveToken(string(tokenJSON))
 }
 
 func (m *Manager) loadStoredToken() {
-	tokenJSON, err := m.storage.GetBytes("oauth_token")
-	if err != nil || len(tokenJSON) == 0 {
+	tokenStr := m.storage.GetToken()
+	if tokenStr == "" {
 		return
 	}
+	tokenJSON := []byte(tokenStr)
 
 	token := &oauth2.Token{}
 	if err := json.Unmarshal(tokenJSON, token); err == nil {
@@ -231,6 +232,6 @@ func (m *Manager) SignOut() {
 	m.token = nil
 	m.client = nil
 	m.userInfo = nil
-	m.storage.Delete("oauth_token")
+	m.storage.DeleteToken()
 }
 
