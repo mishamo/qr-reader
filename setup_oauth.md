@@ -12,7 +12,7 @@
 6. Name: "QR Scanner App"
 7. Add Authorized redirect URIs:
    - `http://localhost:8080/callback`
-   - `com.qorda.qrscanner://oauth/callback` (for mobile)
+   - For mobile, OAuth will use the system browser and redirect to localhost
 8. Click **CREATE**
 9. Copy the Client ID and Client Secret
 

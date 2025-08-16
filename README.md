@@ -62,7 +62,7 @@ git push origin master
 ./build_android.sh
 
 # Or manually:
-fyne package --target android --app-id com.qorda.qrscanner --name "QR Scanner" --icon Icon.png
+fyne package --target android --app-id com.mishamo.qrreader --name "QR Scanner" --icon Icon.png
 ```
 
 #### Option C: Desktop Testing

@@ -1,4 +1,4 @@
-module github.com/qorda/qr-scanner
+module github.com/mishamo/qr-reader
 
 go 1.25
 

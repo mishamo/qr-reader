@@ -11,7 +11,6 @@
    - **Name**: QR Scanner App
    - **Authorized redirect URIs**:
      - `http://localhost:8080/callback`
-     - `com.qorda.qrscanner://oauth/callback`
 4. Click **CREATE** and save your credentials
 
 ### 2. Configure for Development

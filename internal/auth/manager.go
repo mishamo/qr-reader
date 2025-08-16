@@ -12,7 +12,7 @@ import (
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
-	"github.com/qorda/qr-scanner/internal/storage"
+	"github.com/mishamo/qr-reader/internal/storage"
 )
 
 const (

@@ -8,14 +8,14 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
-	"github.com/qorda/qr-scanner/internal/auth"
-	"github.com/qorda/qr-scanner/internal/scanner"
-	"github.com/qorda/qr-scanner/internal/sheets"
-	"github.com/qorda/qr-scanner/internal/storage"
-	"github.com/qorda/qr-scanner/internal/ui"
+	"github.com/mishamo/qr-reader/internal/auth"
+	"github.com/mishamo/qr-reader/internal/scanner"
+	"github.com/mishamo/qr-reader/internal/sheets"
+	"github.com/mishamo/qr-reader/internal/storage"
+	"github.com/mishamo/qr-reader/internal/ui"
 )
 
-const appID = "com.qorda.qrscanner"
+const appID = "com.mishamo.qrreader"
 
 type QRScannerApp struct {
 	app               fyne.App

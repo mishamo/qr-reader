@@ -9,7 +9,7 @@ import (
 
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/sheets/v4"
-	"github.com/qorda/qr-scanner/internal/auth"
+	"github.com/mishamo/qr-reader/internal/auth"
 )
 
 type Manager struct {

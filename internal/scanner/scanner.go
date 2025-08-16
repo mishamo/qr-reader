@@ -8,7 +8,7 @@ import (
 
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
-	"github.com/qorda/qr-scanner/internal/sheets"
+	"github.com/mishamo/qr-reader/internal/sheets"
 )
 
 type Scanner struct {

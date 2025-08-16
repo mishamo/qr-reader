@@ -12,7 +12,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
-	"github.com/qorda/qr-scanner/internal/camera"
+	"github.com/mishamo/qr-reader/internal/camera"
 )
 
 type CameraWidget struct {

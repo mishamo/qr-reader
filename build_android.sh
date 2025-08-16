@@ -35,7 +35,7 @@ echo ""
 echo "Building APK..."
 fyne package \
     --target android \
-    --app-id com.qorda.qrscanner \
+    --app-id com.mishamo.qrreader \
     --name "QR Scanner" \
     --icon Icon.png \
     --release
