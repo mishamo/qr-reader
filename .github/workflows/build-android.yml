@@ -57,5 +57,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: qr-scanner-apk
-        path: "*.apk"
+        path: "QR Scanner.apk"
         retention-days: 30

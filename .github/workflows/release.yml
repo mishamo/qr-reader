@@ -57,7 +57,7 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: QR_Scanner.apk
+        files: "QR Scanner.apk"
         body: |
           ## 📱 QR Scanner Release
           
