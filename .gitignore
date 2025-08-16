@@ -38,6 +38,10 @@ QR Scanner.apk
 # OAuth tokens (stored locally on device)
 oauth_token.json
 token.json
+auth_token
+duplicate_mode
+active_sheet
+user_email
 
 # Fyne bundle
 bundled.go
