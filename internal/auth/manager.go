@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"runtime"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -18,7 +17,7 @@ import (
 )
 
 const (
-	redirectURL = "http://localhost:8080/callback"
+	redirectURL = "https://mishamo.github.io/qr-reader/oauth-callback"
 	authTimeout = 5 * time.Minute
 )
 
@@ -71,106 +70,18 @@ func (m *Manager) IsAuthenticated() bool {
 }
 
 func (m *Manager) Authenticate() error {
-	// Check if we're on Android and use a different flow
-	if runtime.GOOS == "android" {
-		return m.authenticateMobile()
-	}
-	return m.authenticateDesktop()
-}
-
-func (m *Manager) authenticateDesktop() error {
-	return m.authenticateWithLocalServer(false)
-}
-
-func (m *Manager) authenticateWithLocalServer(isMobile bool) error {
-	codeChan := make(chan string, 1)
-	errChan := make(chan error, 1)
-
-	mux := http.NewServeMux()
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: mux,
-	}
-	
-	mux.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
-		code := r.URL.Query().Get("code")
-		if code == "" {
-			errChan <- fmt.Errorf("no authorization code received")
-			fmt.Fprintf(w, "Authorization failed")
-			return
-		}
-		
-		codeChan <- code
-		fmt.Fprintf(w, `
-			<html>
-			<body style="font-family: Arial; text-align: center; padding: 50px;">
-				<h2>✅ Authentication Successful!</h2>
-				<p>You can now close this window and return to the QR Scanner app.</p>
-				<script>window.setTimeout(function(){window.close()}, 2000);</script>
-			</body>
-			</html>
-		`)
-	})
-
-	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			errChan <- err
-		}
-	}()
-
+	// Mobile-only OAuth flow with manual code entry
 	authURL := m.config.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 	
-	if isMobile && m.app != nil {
-		// On mobile, use the app's OpenURL method
+	// Open the auth URL in the browser
+	if m.app != nil {
 		if err := m.app.OpenURL(parseURL(authURL)); err != nil {
 			return fmt.Errorf("failed to open browser: %w", err)
 		}
-	} else {
-		// On desktop, use the system browser
-		if err := openBrowser(authURL); err != nil {
-			return fmt.Errorf("failed to open browser: %w", err)
-		}
 	}
-
-	select {
-	case code := <-codeChan:
-		server.Shutdown(context.Background())
-		
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		
-		token, err := m.config.Exchange(ctx, code)
-		if err != nil {
-			return fmt.Errorf("failed to exchange code for token: %w", err)
-		}
-		
-		m.token = token
-		m.client = m.config.Client(ctx, token)
-		
-		if err := m.fetchUserInfo(); err != nil {
-			return fmt.Errorf("failed to fetch user info: %w", err)
-		}
-		
-		if err := m.storeToken(); err != nil {
-			return fmt.Errorf("failed to store token: %w", err)
-		}
-		
-		return nil
-		
-	case err := <-errChan:
-		server.Shutdown(context.Background())
-		return err
-		
-	case <-time.After(authTimeout):
-		server.Shutdown(context.Background())
-		return fmt.Errorf("authentication timeout")
-	}
-}
-
-func (m *Manager) authenticateMobile() error {
-	// Use the same localhost approach as desktop
-	// Mobile browsers can redirect to localhost
-	return m.authenticateWithLocalServer(true)
+	
+	// Return a special error that tells the UI to show the code entry dialog
+	return &MobileAuthError{AuthURL: authURL}
 }
 
 func (m *Manager) GetClient() *http.Client {
@@ -263,5 +174,28 @@ func (m *Manager) SignOut() {
 	m.client = nil
 	m.userInfo = nil
 	m.storage.DeleteToken()
+}
+
+func (m *Manager) ExchangeCode(code string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	
+	token, err := m.config.Exchange(ctx, code)
+	if err != nil {
+		return fmt.Errorf("failed to exchange code for token: %w", err)
+	}
+	
+	m.token = token
+	m.client = m.config.Client(ctx, token)
+	
+	if err := m.fetchUserInfo(); err != nil {
+		return fmt.Errorf("failed to fetch user info: %w", err)
+	}
+	
+	if err := m.storeToken(); err != nil {
+		return fmt.Errorf("failed to store token: %w", err)
+	}
+	
+	return nil
 }
 

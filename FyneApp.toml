@@ -1,8 +1,8 @@
 AppID = "com.mishamo.qrreader"
 Icon = "Icon.png"
 Name = "QR Scanner"
-Version = "1.0.5"
-Build = 5
+Version = "1.0.10"
+Build = 10
 
 [AndroidSettings]
 MinSdk = 28
