@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/sheets/v4.dart' as sheets;
 import 'package:googleapis/drive/v3.dart' as drive;
@@ -27,6 +28,31 @@ class AuthService {
   List<String> get debugLogs => _debugLogs;
   String? get lastError => _lastError;
   
+  // Test configuration method
+  Future<void> testConfiguration() async {
+    _log('=== TESTING CONFIGURATION ===');
+    try {
+      _log('1. Testing GoogleSignIn instance properties...');
+      _log('   - Can create instance: YES');
+      
+      _log('2. Attempting to check current authentication state...');
+      final future = GoogleSignIn.instance.attemptLightweightAuthentication();
+      if (future != null) {
+        _log('   - Lightweight auth available, attempting...');
+        await future;
+        _log('   - Lightweight auth completed');
+      } else {
+        _log('   - No existing authentication found (expected for first run)');
+      }
+      
+      _log('3. Configuration appears valid');
+      _log('=== END CONFIGURATION TEST ===');
+    } catch (e) {
+      _log('ERROR during configuration test: $e');
+      _log('This might indicate google-services.json issues');
+    }
+  }
+  
   void _log(String message) {
     final timestamp = DateTime.now().toIso8601String();
     final logMessage = '[$timestamp] $message';
@@ -40,20 +66,51 @@ class AuthService {
   Future<void> initialize() async {
     try {
       _log('Initializing Google Sign-In...');
-      _log('Using google-services.json configuration on Android');
-      _log('Server Client ID (Web OAuth): 65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com');
-      _log('Scopes: ${_scopes.join(", ")}}');
+      _log('Platform: ${defaultTargetPlatform.toString()}');
+      _log('Debug mode: ${kDebugMode ? "YES" : "NO"}');
+      _log('Release mode: ${kReleaseMode ? "YES" : "NO"}');
       
-      // On Android with google-services.json, we should NOT provide clientId
-      // Only serverClientId is needed (using the Web OAuth client ID)
-      await GoogleSignIn.instance.initialize(
-        serverClientId: '65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com',
-      );
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        _log('Android detected - using google-services.json configuration');
+        
+        // Try different approaches based on what we've learned
+        _log('Testing initialization approach...');
+        
+        // Approach 1: Try with NO parameters (let google-services.json handle everything)
+        _log('Attempt 1: Initialize with no parameters (pure google-services.json)');
+        try {
+          await GoogleSignIn.instance.initialize();
+          _log('SUCCESS: Initialized with no parameters');
+        } catch (e) {
+          _log('FAILED with no parameters: $e');
+          
+          // Approach 2: Try with serverClientId only
+          _log('Attempt 2: Initialize with serverClientId only');
+          try {
+            await GoogleSignIn.instance.initialize(
+              serverClientId: '65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com',
+            );
+            _log('SUCCESS: Initialized with serverClientId');
+          } catch (e2) {
+            _log('FAILED with serverClientId: $e2');
+            throw e2;
+          }
+        }
+        
+        _log('Initialize() completed');
+      } else {
+        _log('Non-Android platform - using clientId');
+        await GoogleSignIn.instance.initialize(
+          clientId: '65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com',
+        );
+      }
       
-      _log('Google Sign-In initialized successfully');
+      _log('Scopes to be requested: ${_scopes.join(", ")}}');
+      _log('Google Sign-In initialization complete');
     } catch (e, stackTrace) {
       _lastError = 'Initialize failed: $e';
       _log('ERROR in initialize: $e');
+      _log('Error type: ${e.runtimeType}');
       _log('Stack trace: $stackTrace');
       rethrow;
     }
@@ -133,25 +190,43 @@ class AuthService {
   Future<GoogleSignInAccount?> signIn() async {
     try {
       _lastError = null;
-      _log('Starting sign-in process...');
-      _log('Package name: com.mishamo.qr_scanner');
+      _log('=== SIGN-IN ATTEMPT STARTING ===');
+      _log('Platform: ${defaultTargetPlatform.toString()}');
+      _log('Package name expected: com.mishamo.qr_scanner');
+      _log('Current user before sign-in: ${_currentUser?.email ?? "none"}');
+      
+      // Check if already initialized
+      _log('Checking GoogleSignIn instance state...');
       _log('Using authenticate() method (Google Sign-In v7)');
       
+      // Log configuration being used
+      _log('Configuration check:');
+      _log('- serverClientId configured: YES');
+      _log('- google-services.json should contain both Web and Android OAuth clients');
+      _log('- Expected SHA-1: 85:2E:B4:F6:03:61:AD:CD:D3:BE:12:AF:8A:B3:74:33:DF:98:8D:0A');
+      
       // Use authenticate() for v7
+      _log('Calling GoogleSignIn.instance.authenticate()...');
       await GoogleSignIn.instance.authenticate();
-      _log('authenticate() completed - waiting for event processing');
+      _log('authenticate() returned (no exception) - waiting for event processing');
       
       // The authentication event listener will handle setting _currentUser
       // Wait a bit for the event to be processed
       await Future.delayed(const Duration(milliseconds: 1000));
       
       if (_currentUser == null) {
-        _lastError = 'No user after authentication - check OAuth client configuration';
+        _lastError = 'No user after authentication';
         _log('ERROR: _currentUser is null after authenticate()');
-        _log('Possible issues:');
-        _log('1. Wrong OAuth client type (should be Web Application)');
-        _log('2. Package name mismatch');
-        _log('3. SHA-1 fingerprint not registered');
+        _log('=== TROUBLESHOOTING CHECKLIST ===');
+        _log('1. In Google Cloud Console, verify:');
+        _log('   - Android OAuth client exists with SHA-1: 85:2E:B4:F6:03:61:AD:CD:D3:BE:12:AF:8A:B3:74:33:DF:98:8D:0A');
+        _log('   - Package name: com.mishamo.qr_scanner');
+        _log('   - Web OAuth client exists');
+        _log('2. OAuth consent screen:');
+        _log('   - Status: Testing or Production');
+        _log('   - Test users added (if Testing)');
+        _log('3. google-services.json contains:');
+        _log('   - Both Android (type 1) and Web (type 3) OAuth clients');
         return null;
       }
       

@@ -200,6 +200,30 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: const TextStyle(color: Colors.white70),
                           ),
                         ),
+                        // Configuration test button (only when debug console is visible)
+                        if (_showDebugConsole)
+                          TextButton.icon(
+                            onPressed: () async {
+                              setState(() {});
+                              await _authService.testConfiguration();
+                              setState(() {});
+                              // Scroll to bottom to show test results
+                              Future.delayed(const Duration(milliseconds: 100), () {
+                                if (_debugScrollController.hasClients) {
+                                  _debugScrollController.animateTo(
+                                    _debugScrollController.position.maxScrollExtent,
+                                    duration: const Duration(milliseconds: 200),
+                                    curve: Curves.easeOut,
+                                  );
+                                }
+                              });
+                            },
+                            icon: const Icon(Icons.settings, color: Colors.white70),
+                            label: const Text(
+                              'Test Configuration',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          ),
                       ],
                     ),
                   ),
