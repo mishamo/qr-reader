@@ -80,16 +80,17 @@ class AuthService {
       _log('Release mode: ${kReleaseMode ? "YES" : "NO"}');
       
       if (defaultTargetPlatform == TargetPlatform.android) {
-        _log('Android detected - configuring with serverClientId');
+        _log('Android detected - trying WITHOUT google-services.json');
+        _log('Using direct OAuth configuration like Fyne did');
         _log('Web OAuth Client ID: 65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com');
         
-        // IMPORTANT: Even though initialization succeeds without serverClientId,
-        // authentication REQUIRES it on Android. This is a Google Sign-In v7 requirement.
+        // Try with both clientId AND serverClientId to override google-services.json
         await GoogleSignIn.instance.initialize(
+          clientId: '65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com',
           serverClientId: '65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com',
         );
         
-        _log('Initialize() completed with serverClientId');
+        _log('Initialize() completed with direct OAuth config');
       } else {
         _log('Non-Android platform - using clientId');
         await GoogleSignIn.instance.initialize(
