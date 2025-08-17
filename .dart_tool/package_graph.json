@@ -25,7 +25,7 @@
     },
     {
       "name": "flutter_lints",
-      "version": "5.0.0",
+      "version": "6.0.0",
       "dependencies": [
         "lints"
       ]
@@ -50,7 +50,7 @@
     },
     {
       "name": "permission_handler",
-      "version": "11.4.0",
+      "version": "12.0.1",
       "dependencies": [
         "flutter",
         "meta",
@@ -90,7 +90,7 @@
     },
     {
       "name": "extension_google_sign_in_as_googleapis_auth",
-      "version": "2.0.13",
+      "version": "3.0.0",
       "dependencies": [
         "flutter",
         "google_sign_in",
@@ -112,7 +112,7 @@
     },
     {
       "name": "googleapis",
-      "version": "13.2.0",
+      "version": "14.0.0",
       "dependencies": [
         "_discoveryapis_commons",
         "http"
@@ -120,17 +120,19 @@
     },
     {
       "name": "mobile_scanner",
-      "version": "6.0.10",
+      "version": "7.0.1",
       "dependencies": [
+        "collection",
         "flutter",
         "flutter_web_plugins",
+        "meta",
         "plugin_platform_interface",
         "web"
       ]
     },
     {
       "name": "google_sign_in",
-      "version": "6.3.0",
+      "version": "7.1.1",
       "dependencies": [
         "flutter",
         "google_sign_in_android",
@@ -158,7 +160,7 @@
     },
     {
       "name": "lints",
-      "version": "5.1.1",
+      "version": "6.0.0",
       "dependencies": []
     },
     {
@@ -246,20 +248,20 @@
       ]
     },
     {
+      "name": "permission_handler_windows",
+      "version": "0.2.1",
+      "dependencies": [
+        "flutter",
+        "permission_handler_platform_interface"
+      ]
+    },
+    {
       "name": "permission_handler_platform_interface",
       "version": "4.3.0",
       "dependencies": [
         "flutter",
         "meta",
         "plugin_platform_interface"
-      ]
-    },
-    {
-      "name": "permission_handler_windows",
-      "version": "0.2.1",
-      "dependencies": [
-        "flutter",
-        "permission_handler_platform_interface"
       ]
     },
     {
@@ -275,14 +277,6 @@
     {
       "name": "permission_handler_apple",
       "version": "9.4.7",
-      "dependencies": [
-        "flutter",
-        "permission_handler_platform_interface"
-      ]
-    },
-    {
-      "name": "permission_handler_android",
-      "version": "12.1.0",
       "dependencies": [
         "flutter",
         "permission_handler_platform_interface"
@@ -474,7 +468,7 @@
     },
     {
       "name": "google_sign_in_web",
-      "version": "0.12.4+4",
+      "version": "1.0.0",
       "dependencies": [
         "flutter",
         "flutter_web_plugins",
@@ -486,26 +480,10 @@
     },
     {
       "name": "google_sign_in_platform_interface",
-      "version": "2.5.0",
+      "version": "3.0.0",
       "dependencies": [
         "flutter",
         "plugin_platform_interface"
-      ]
-    },
-    {
-      "name": "google_sign_in_ios",
-      "version": "5.9.0",
-      "dependencies": [
-        "flutter",
-        "google_sign_in_platform_interface"
-      ]
-    },
-    {
-      "name": "google_sign_in_android",
-      "version": "6.2.1",
-      "dependencies": [
-        "flutter",
-        "google_sign_in_platform_interface"
       ]
     },
     {
@@ -648,6 +626,30 @@
       "dependencies": [
         "meta",
         "path"
+      ]
+    },
+    {
+      "name": "permission_handler_android",
+      "version": "13.0.1",
+      "dependencies": [
+        "flutter",
+        "permission_handler_platform_interface"
+      ]
+    },
+    {
+      "name": "google_sign_in_ios",
+      "version": "6.1.0",
+      "dependencies": [
+        "flutter",
+        "google_sign_in_platform_interface"
+      ]
+    },
+    {
+      "name": "google_sign_in_android",
+      "version": "7.0.3",
+      "dependencies": [
+        "flutter",
+        "google_sign_in_platform_interface"
       ]
     }
   ],

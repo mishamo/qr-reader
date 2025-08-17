@@ -57,9 +57,9 @@
     },
     {
       "name": "extension_google_sign_in_as_googleapis_auth",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/extension_google_sign_in_as_googleapis_auth-2.0.13",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/extension_google_sign_in_as_googleapis_auth-3.0.0",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "fake_async",
@@ -87,9 +87,9 @@
     },
     {
       "name": "flutter_lints",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/flutter_lints-5.0.0",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/flutter_lints-6.0.0",
       "packageUri": "lib/",
-      "languageVersion": "3.5"
+      "languageVersion": "3.8"
     },
     {
       "name": "flutter_test",
@@ -111,39 +111,39 @@
     },
     {
       "name": "google_sign_in",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/google_sign_in-6.3.0",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/google_sign_in-7.1.1",
       "packageUri": "lib/",
       "languageVersion": "3.6"
     },
     {
       "name": "google_sign_in_android",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/google_sign_in_android-6.2.1",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/google_sign_in_android-7.0.3",
       "packageUri": "lib/",
       "languageVersion": "3.6"
     },
     {
       "name": "google_sign_in_ios",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/google_sign_in_ios-5.9.0",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/google_sign_in_ios-6.1.0",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "google_sign_in_platform_interface",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/google_sign_in_platform_interface-2.5.0",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/google_sign_in_platform_interface-3.0.0",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "google_sign_in_web",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/google_sign_in_web-0.12.4+4",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/google_sign_in_web-1.0.0",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "googleapis",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/googleapis-13.2.0",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/googleapis-14.0.0",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "googleapis_auth",
@@ -183,9 +183,9 @@
     },
     {
       "name": "lints",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/lints-5.1.1",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/lints-6.0.0",
       "packageUri": "lib/",
-      "languageVersion": "3.6"
+      "languageVersion": "3.8"
     },
     {
       "name": "matcher",
@@ -207,9 +207,9 @@
     },
     {
       "name": "mobile_scanner",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/mobile_scanner-6.0.10",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/mobile_scanner-7.0.1",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.7"
     },
     {
       "name": "path",
@@ -237,13 +237,13 @@
     },
     {
       "name": "permission_handler",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/permission_handler-11.4.0",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/permission_handler-12.0.1",
       "packageUri": "lib/",
       "languageVersion": "3.5"
     },
     {
       "name": "permission_handler_android",
-      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/permission_handler_android-12.1.0",
+      "rootUri": "file:///Users/misha.griffiths/.pub-cache/hosted/pub.dev/permission_handler_android-13.0.1",
       "packageUri": "lib/",
       "languageVersion": "3.5"
     },
