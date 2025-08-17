@@ -31,10 +31,11 @@ class SheetsService {
 
   Future<List<SpreadsheetInfo>> listSpreadsheets() async {
     try {
-      final httpClient = await _authService._googleSignIn.authenticatedClient();
-      if (httpClient == null) return [];
-
-      final driveApi = drive.DriveApi(httpClient);
+      final sheetsApi = await _authService.getSheetsApi();
+      if (sheetsApi == null) return [];
+      
+      // Get authenticated client for Drive API
+      final driveApi = drive.DriveApi(sheetsApi.context.client);
       final fileList = await driveApi.files.list(
         q: "mimeType='application/vnd.google-apps.spreadsheet'",
         $fields: 'files(id, name, createdTime, modifiedTime)',

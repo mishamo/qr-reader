@@ -281,16 +281,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
                       _scannerController?.toggleTorch();
                     },
                     backgroundColor: Colors.white.withOpacity(0.8),
-                    child: ValueListenableBuilder(
-                      valueListenable: _scannerController!.torchState,
-                      builder: (context, state, child) {
-                        return Icon(
-                          state == TorchState.on
-                              ? Icons.flash_on
-                              : Icons.flash_off,
-                          color: Colors.black,
-                        );
-                      },
+                    child: Icon(
+                      _scannerController!.torchEnabled
+                          ? Icons.flash_on
+                          : Icons.flash_off,
+                      color: Colors.black,
                     ),
                   ),
                 ),
