@@ -4,7 +4,6 @@ import (
 	"io"
 	
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/storage"
 )
 
 const (
@@ -27,12 +26,7 @@ func New(store fyne.Storage) *Storage {
 }
 
 func (s *Storage) SaveToken(token string) error {
-	uri, err := storage.ParseURI("file://" + keyToken)
-	if err != nil {
-		return err
-	}
-	
-	writer, err := storage.Writer(uri)
+	writer, err := s.store.Create(keyToken)
 	if err != nil {
 		return err
 	}
@@ -43,12 +37,7 @@ func (s *Storage) SaveToken(token string) error {
 }
 
 func (s *Storage) GetToken() string {
-	uri, err := storage.ParseURI("file://" + keyToken)
-	if err != nil {
-		return ""
-	}
-	
-	reader, err := storage.Reader(uri)
+	reader, err := s.store.Open(keyToken)
 	if err != nil {
 		return ""
 	}
@@ -63,17 +52,11 @@ func (s *Storage) GetToken() string {
 }
 
 func (s *Storage) DeleteToken() {
-	uri, _ := storage.ParseURI("file://" + keyToken)
-	storage.Delete(uri)
+	s.store.Remove(keyToken)
 }
 
 func (s *Storage) SaveActiveSheet(sheetID string) error {
-	uri, err := storage.ParseURI("file://" + keyActiveSheet)
-	if err != nil {
-		return err
-	}
-	
-	writer, err := storage.Writer(uri)
+	writer, err := s.store.Create(keyActiveSheet)
 	if err != nil {
 		return err
 	}
@@ -84,12 +67,7 @@ func (s *Storage) SaveActiveSheet(sheetID string) error {
 }
 
 func (s *Storage) GetActiveSheet() string {
-	uri, err := storage.ParseURI("file://" + keyActiveSheet)
-	if err != nil {
-		return ""
-	}
-	
-	reader, err := storage.Reader(uri)
+	reader, err := s.store.Open(keyActiveSheet)
 	if err != nil {
 		return ""
 	}
@@ -104,12 +82,7 @@ func (s *Storage) GetActiveSheet() string {
 }
 
 func (s *Storage) SetDuplicateMode(mode string) error {
-	uri, err := storage.ParseURI("file://" + keyDuplicateMode)
-	if err != nil {
-		return err
-	}
-	
-	writer, err := storage.Writer(uri)
+	writer, err := s.store.Create(keyDuplicateMode)
 	if err != nil {
 		return err
 	}
@@ -120,12 +93,7 @@ func (s *Storage) SetDuplicateMode(mode string) error {
 }
 
 func (s *Storage) GetDuplicateMode() string {
-	uri, err := storage.ParseURI("file://" + keyDuplicateMode)
-	if err != nil {
-		return "Allow Duplicates"
-	}
-	
-	reader, err := storage.Reader(uri)
+	reader, err := s.store.Open(keyDuplicateMode)
 	if err != nil {
 		return "Allow Duplicates"
 	}
@@ -140,12 +108,7 @@ func (s *Storage) GetDuplicateMode() string {
 }
 
 func (s *Storage) SaveUserEmail(email string) error {
-	uri, err := storage.ParseURI("file://" + keyUserEmail)
-	if err != nil {
-		return err
-	}
-	
-	writer, err := storage.Writer(uri)
+	writer, err := s.store.Create(keyUserEmail)
 	if err != nil {
 		return err
 	}
@@ -156,12 +119,7 @@ func (s *Storage) SaveUserEmail(email string) error {
 }
 
 func (s *Storage) GetUserEmail() string {
-	uri, err := storage.ParseURI("file://" + keyUserEmail)
-	if err != nil {
-		return ""
-	}
-	
-	reader, err := storage.Reader(uri)
+	reader, err := s.store.Open(keyUserEmail)
 	if err != nil {
 		return ""
 	}
@@ -178,8 +136,6 @@ func (s *Storage) GetUserEmail() string {
 func (s *Storage) ClearAll() {
 	keys := []string{keyToken, keyActiveSheet, keyDuplicateMode, keyUserEmail, keyScanHistory, keySheetCache}
 	for _, key := range keys {
-		if uri, err := storage.ParseURI("file://" + key); err == nil {
-			storage.Delete(uri)
-		}
+		s.store.Remove(key)
 	}
 }
