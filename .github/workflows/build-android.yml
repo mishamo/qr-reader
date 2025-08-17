@@ -1,10 +1,10 @@
-name: Build Android APK
+name: Build Flutter Android APK
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -12,50 +12,85 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
-    - name: Set up Go
-      uses: actions/setup-go@v4
+    - name: Set up JDK
+      uses: actions/setup-java@v4
       with:
-        go-version: '1.21'
+        java-version: '17'
+        distribution: 'temurin'
     
-    - name: Install Fyne
-      run: |
-        go install fyne.io/tools/cmd/fyne@latest
-        echo "Fyne version:"
-        fyne version
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.35.1'
+        channel: 'stable'
     
-    - name: Set up Android SDK
-      uses: android-actions/setup-android@v2
-    
-    - name: Install Android NDK
-      run: |
-        sdkmanager --install "ndk;25.2.9519653"
-        echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
-    
-    - name: Build APK
+    - name: Create google-services.json
       env:
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       run: |
-        # Create credentials file for embedding
-        cat > internal/auth/credentials.go << EOF
-        package auth
-        
-        func init() {
-            buildTimeClientID = "${{ secrets.GOOGLE_CLIENT_ID }}"
-            buildTimeClientSecret = "${{ secrets.GOOGLE_CLIENT_SECRET }}"
+        cat > android/app/google-services.json << EOF
+        {
+          "project_info": {
+            "project_number": "65444604303",
+            "project_id": "qr-scanner-conference",
+            "storage_bucket": "qr-scanner-conference.appspot.com"
+          },
+          "client": [
+            {
+              "client_info": {
+                "mobilesdk_app_id": "1:65444604303:android:qrscanner",
+                "android_client_info": {
+                  "package_name": "com.mishamo.qr_scanner"
+                }
+              },
+              "oauth_client": [
+                {
+                  "client_id": "$GOOGLE_CLIENT_ID",
+                  "client_type": 1,
+                  "android_info": {
+                    "package_name": "com.mishamo.qr_scanner",
+                    "certificate_hash": ""
+                  }
+                }
+              ],
+              "api_key": [
+                {
+                  "current_key": "AIzaSy-placeholder"
+                }
+              ],
+              "services": {
+                "appinvite_service": {
+                  "other_platform_oauth_client": []
+                }
+              }
+            }
+          ],
+          "configuration_version": "1"
         }
         EOF
-        
-        # Package with Fyne
-        echo "Building with FyneApp.toml:"
-        cat FyneApp.toml
-        fyne package --target android --release --app-id com.mishamo.qrreader
+    
+    - name: Install dependencies
+      run: flutter pub get
+    
+    - name: Build APK
+      run: flutter build apk --release
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: qr-scanner-apk
-        path: "*.apk"
-        retention-days: 30
+        name: qr-scanner-release
+        path: build/app/outputs/flutter-apk/app-release.apk
+    
+    - name: Create Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v${{ github.run_number }}
+        name: Release v${{ github.run_number }}
+        draft: false
+        prerelease: false
+        files: build/app/outputs/flutter-apk/app-release.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "65444604303",
+    "project_id": "qr-scanner-conference",
+    "storage_bucket": "qr-scanner-conference.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:65444604303:android:qrscanner",
+        "android_client_info": {
+          "package_name": "com.mishamo.qr_scanner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "65444604303-msum8l55m5evbau52mfcdcsb7e4o8f1j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mishamo.qr_scanner",
+            "certificate_hash": ""
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSy-placeholder"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
