@@ -31,11 +31,8 @@ class SheetsService {
 
   Future<List<SpreadsheetInfo>> listSpreadsheets() async {
     try {
-      final sheetsApi = await _authService.getSheetsApi();
-      if (sheetsApi == null) return [];
-      
-      // Get authenticated client for Drive API
-      final driveApi = drive.DriveApi(sheetsApi.context.client);
+      final driveApi = await _authService.getDriveApi();
+      if (driveApi == null) return [];
       final fileList = await driveApi.files.list(
         q: "mimeType='application/vnd.google-apps.spreadsheet'",
         $fields: 'files(id, name, createdTime, modifiedTime)',
