@@ -23,7 +23,7 @@ class AuthService {
 
   Future<void> initialize() async {
     await GoogleSignIn.instance.initialize(
-      clientId: '65444604303-msum8l55m5evbau52mfcdcsb7e4o8f1j.apps.googleusercontent.com',
+      clientId: '65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com',
     );
     
     // Listen to authentication events
