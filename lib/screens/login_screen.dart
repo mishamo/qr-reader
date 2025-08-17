@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/auth_service.dart';
 
@@ -234,6 +235,29 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             const Spacer(),
+                            IconButton(
+                              icon: const Icon(Icons.copy, color: Colors.yellow),
+                              onPressed: () async {
+                                final logs = _authService.debugLogs.join('\n');
+                                final lastError = _authService.lastError;
+                                final fullText = lastError != null 
+                                    ? 'LAST ERROR:\n$lastError\n\nDEBUG LOGS:\n$logs'
+                                    : 'DEBUG LOGS:\n$logs';
+                                
+                                await Clipboard.setData(ClipboardData(text: fullText));
+                                
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Debug logs copied to clipboard'),
+                                      duration: Duration(seconds: 2),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                }
+                              },
+                              tooltip: 'Copy all logs',
+                            ),
                             IconButton(
                               icon: const Icon(Icons.clear_all, color: Colors.yellow),
                               onPressed: () {
