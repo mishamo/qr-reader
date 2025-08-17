@@ -40,12 +40,13 @@ class AuthService {
   Future<void> initialize() async {
     try {
       _log('Initializing Google Sign-In...');
-      _log('Client ID: 65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com');
-      _log('Server Client ID (for Android): 65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com');
+      _log('Using google-services.json configuration on Android');
+      _log('Server Client ID (Web OAuth): 65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com');
       _log('Scopes: ${_scopes.join(", ")}}');
       
+      // On Android with google-services.json, we should NOT provide clientId
+      // Only serverClientId is needed (using the Web OAuth client ID)
       await GoogleSignIn.instance.initialize(
-        clientId: '65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com',
         serverClientId: '65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com',
       );
       
