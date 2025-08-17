@@ -71,33 +71,16 @@ class AuthService {
       _log('Release mode: ${kReleaseMode ? "YES" : "NO"}');
       
       if (defaultTargetPlatform == TargetPlatform.android) {
-        _log('Android detected - using google-services.json configuration');
+        _log('Android detected - configuring with serverClientId');
+        _log('Web OAuth Client ID: 65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com');
         
-        // Try different approaches based on what we've learned
-        _log('Testing initialization approach...');
+        // IMPORTANT: Even though initialization succeeds without serverClientId,
+        // authentication REQUIRES it on Android. This is a Google Sign-In v7 requirement.
+        await GoogleSignIn.instance.initialize(
+          serverClientId: '65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com',
+        );
         
-        // Approach 1: Try with NO parameters (let google-services.json handle everything)
-        _log('Attempt 1: Initialize with no parameters (pure google-services.json)');
-        try {
-          await GoogleSignIn.instance.initialize();
-          _log('SUCCESS: Initialized with no parameters');
-        } catch (e) {
-          _log('FAILED with no parameters: $e');
-          
-          // Approach 2: Try with serverClientId only
-          _log('Attempt 2: Initialize with serverClientId only');
-          try {
-            await GoogleSignIn.instance.initialize(
-              serverClientId: '65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com',
-            );
-            _log('SUCCESS: Initialized with serverClientId');
-          } catch (e2) {
-            _log('FAILED with serverClientId: $e2');
-            throw e2;
-          }
-        }
-        
-        _log('Initialize() completed');
+        _log('Initialize() completed with serverClientId');
       } else {
         _log('Non-Android platform - using clientId');
         await GoogleSignIn.instance.initialize(
