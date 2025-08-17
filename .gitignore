@@ -54,3 +54,22 @@ test_*.go
 
 # Icon creation script output (keep Icon.png)
 create_icon.go
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+
+# Flutter build artifacts
+build/
+/build/
+android/.gradle/
+android/gradle/
+android/local.properties
+*.iml
+*.ipr
+*.iws

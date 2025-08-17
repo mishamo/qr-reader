@@ -10,7 +10,7 @@ class AuthService {
   AuthService._internal();
 
   GoogleSignInAccount? _currentUser;
-  GoogleSignInTokenData? _currentTokens;
+  GoogleSignInClientAuthorization? _currentAuthorization;
   http.Client? _httpClient;
   
   static const List<String> _scopes = [
@@ -36,15 +36,14 @@ class AuthService {
       _currentUser = user;
       if (user != null) {
         // Get authorization for scopes
-        final authorization = await user.authorizationClient.authorizationForScopes(_scopes);
-        _currentTokens = authorization?.tokenData;
+        _currentAuthorization = await user.authorizationClient.authorizationForScopes(_scopes);
       } else {
-        _currentTokens = null;
+        _currentAuthorization = null;
       }
     }).onError((error) {
       print('Authentication error: $error');
       _currentUser = null;
-      _currentTokens = null;
+      _currentAuthorization = null;
     });
   }
 
@@ -59,14 +58,12 @@ class AuthService {
         await Future.delayed(const Duration(milliseconds: 500));
         
         // Ensure we have authorization for our scopes
-        if (_currentUser != null && _currentTokens == null) {
-          final authorization = await _currentUser!.authorizationClient.authorizationForScopes(_scopes);
-          _currentTokens = authorization?.tokenData;
+        if (_currentUser != null && _currentAuthorization == null) {
+          _currentAuthorization = await _currentUser!.authorizationClient.authorizationForScopes(_scopes);
           
           // If not authorized for all scopes, request them
-          if (_currentTokens == null) {
-            final newAuth = await _currentUser!.authorizationClient.authorizeScopes(_scopes);
-            _currentTokens = newAuth?.tokenData;
+          if (_currentAuthorization == null) {
+            _currentAuthorization = await _currentUser!.authorizationClient.authorizeScopes(_scopes);
           }
         }
         
@@ -89,13 +86,11 @@ class AuthService {
       
       // Ensure we have authorization for our scopes
       if (_currentUser != null) {
-        final authorization = await _currentUser!.authorizationClient.authorizationForScopes(_scopes);
-        _currentTokens = authorization?.tokenData;
+        _currentAuthorization = await _currentUser!.authorizationClient.authorizationForScopes(_scopes);
         
         // If not authorized for all scopes, request them
-        if (_currentTokens == null) {
-          final newAuth = await _currentUser!.authorizationClient.authorizeScopes(_scopes);
-          _currentTokens = newAuth?.tokenData;
+        if (_currentAuthorization == null) {
+          _currentAuthorization = await _currentUser!.authorizationClient.authorizeScopes(_scopes);
         }
         
         print('Signed in as: ${_currentUser!.email}');
@@ -111,28 +106,26 @@ class AuthService {
   Future<void> signOut() async {
     await GoogleSignIn.instance.signOut();
     _currentUser = null;
-    _currentTokens = null;
+    _currentAuthorization = null;
     _httpClient?.close();
     _httpClient = null;
   }
 
   Future<http.Client?> getAuthenticatedClient() async {
     try {
-      if (_currentTokens == null) {
+      if (_currentAuthorization == null) {
         if (_currentUser != null) {
           // Try to get authorization
-          final authorization = await _currentUser!.authorizationClient.authorizationForScopes(_scopes);
-          _currentTokens = authorization?.tokenData;
+          _currentAuthorization = await _currentUser!.authorizationClient.authorizationForScopes(_scopes);
           
-          if (_currentTokens == null) {
+          if (_currentAuthorization == null) {
             // Request authorization if not available
-            final newAuth = await _currentUser!.authorizationClient.authorizeScopes(_scopes);
-            _currentTokens = newAuth?.tokenData;
+            _currentAuthorization = await _currentUser!.authorizationClient.authorizeScopes(_scopes);
           }
         }
         
-        if (_currentTokens == null) {
-          print('No tokens available');
+        if (_currentAuthorization == null) {
+          print('No authorization available');
           return null;
         }
       }
@@ -144,10 +137,10 @@ class AuthService {
       final credentials = auth.AccessCredentials(
         auth.AccessToken(
           'Bearer',
-          _currentTokens!.accessToken,
+          _currentAuthorization!.accessToken,
           DateTime.now().add(const Duration(hours: 1)),
         ),
-        null,
+        null, // idToken is not available in GoogleSignInClientAuthorization
         _scopes,
       );
 
