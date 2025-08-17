@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "65444604303-fjkjj9dp0ntirrh6nqcsb2m7u3d892g7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mishamo.qr_scanner",
+            "certificate_hash": "852eb4f60361adcdd3be12af8ab37433df988d0a"
+          }
+        },
+        {
           "client_id": "65444604303-mf6a3k7ibmrnrsuido8a9983nge7rqfh.apps.googleusercontent.com",
           "client_type": 3
         }
