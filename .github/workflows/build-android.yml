@@ -21,12 +21,51 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+        cache: 'gradle'  # Cache Gradle dependencies
     
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
         flutter-version: '3.35.1'
         channel: 'stable'
+        cache: true  # Cache Flutter SDK
+    
+    # Cache pub dependencies
+    - name: Cache pub dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.pub-cache
+          .dart_tool
+          .packages
+          .flutter-plugins
+          .flutter-plugin-dependencies
+        key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pub-
+    
+    # Cache Gradle wrapper and dependencies
+    - name: Cache Gradle
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          android/.gradle
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+    
+    # Cache build artifacts
+    - name: Cache build artifacts
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/**
+          !build/app/outputs/flutter-apk/*.apk
+        key: ${{ runner.os }}-build-${{ hashFiles('lib/**', 'android/**', 'pubspec.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-build-
     
     - name: Create google-services.json
       env:
