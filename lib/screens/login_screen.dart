@@ -201,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         // Configuration test button (only when debug console is visible)
-                        if (_showDebugConsole)
+                        if (_showDebugConsole) ...[
                           TextButton.icon(
                             onPressed: () async {
                               setState(() {});
@@ -224,6 +224,24 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextStyle(color: Colors.white70),
                             ),
                           ),
+                          TextButton.icon(
+                            onPressed: () {
+                              _authService.toggleTestMode();
+                              setState(() {});
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Test mode toggled - check debug console'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.science, color: Colors.white70),
+                            label: const Text(
+                              'Toggle Test Mode',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

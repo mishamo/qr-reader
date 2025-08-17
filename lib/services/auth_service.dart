@@ -24,9 +24,18 @@ class AuthService {
     'https://www.googleapis.com/auth/drive.file',
   ];
   
+  // Test mode flag
+  static bool _testModeNoScopes = false;
+  
   GoogleSignInAccount? get currentUser => _currentUser;
   List<String> get debugLogs => _debugLogs;
   String? get lastError => _lastError;
+  
+  // Toggle test mode
+  void toggleTestMode() {
+    _testModeNoScopes = !_testModeNoScopes;
+    _log('TEST MODE TOGGLED: ${_testModeNoScopes ? "ON - Skipping scopes" : "OFF - Using normal scopes"}');
+  }
   
   // Test configuration method
   Future<void> testConfiguration() async {
@@ -190,8 +199,28 @@ class AuthService {
       
       // Use authenticate() for v7
       _log('Calling GoogleSignIn.instance.authenticate()...');
-      await GoogleSignIn.instance.authenticate();
-      _log('authenticate() returned (no exception) - waiting for event processing');
+      _log('Current GoogleSignIn state before authenticate:');
+      _log('- Has instance: ${GoogleSignIn.instance != null}');
+      
+      try {
+        await GoogleSignIn.instance.authenticate();
+        _log('authenticate() returned successfully (no exception)');
+      } catch (authError) {
+        _log('authenticate() threw immediate error: $authError');
+        if (authError.toString().contains('[16]')) {
+          _log('ERROR CODE 16 DETAILS:');
+          _log('This is "Account reauth failed" - typically means:');
+          _log('1. Scopes not yet propagated (can take up to 1 hour)');
+          _log('2. OAuth consent screen needs to be in Production mode');
+          _log('3. Need to wait for Google servers to update');
+          _log('');
+          _log('WORKAROUND: Try using a different Google account');
+          _log('or wait 30-60 minutes for full propagation');
+        }
+        rethrow;
+      }
+      
+      _log('Waiting for event processing...');
       
       // The authentication event listener will handle setting _currentUser
       // Wait a bit for the event to be processed
@@ -214,13 +243,17 @@ class AuthService {
       }
       
       // Ensure we have authorization for our scopes
-      _log('User available, checking authorization...');
-      _currentAuthorization = await _currentUser!.authorizationClient.authorizationForScopes(_scopes);
-      
-      // If not authorized for all scopes, request them
-      if (_currentAuthorization == null) {
-        _log('Not authorized for scopes, requesting...');
-        _currentAuthorization = await _currentUser!.authorizationClient.authorizeScopes(_scopes);
+      if (!_testModeNoScopes) {
+        _log('User available, checking authorization...');
+        _currentAuthorization = await _currentUser!.authorizationClient.authorizationForScopes(_scopes);
+        
+        // If not authorized for all scopes, request them
+        if (_currentAuthorization == null) {
+          _log('Not authorized for scopes, requesting...');
+          _currentAuthorization = await _currentUser!.authorizationClient.authorizeScopes(_scopes);
+        }
+      } else {
+        _log('TEST MODE: Skipping scope authorization');
       }
       
       if (_currentAuthorization != null) {
