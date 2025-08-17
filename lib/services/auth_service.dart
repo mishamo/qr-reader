@@ -10,31 +10,41 @@ class AuthService {
   AuthService._internal();
 
   GoogleSignInAccount? _currentUser;
-  GoogleSignInAuthentication? _currentAuth;
+  GoogleSignInTokenData? _currentTokens;
   http.Client? _httpClient;
+  
+  static const List<String> _scopes = [
+    'email',
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive.file',
+  ];
   
   GoogleSignInAccount? get currentUser => _currentUser;
 
   Future<void> initialize() async {
     await GoogleSignIn.instance.initialize(
       clientId: '65444604303-msum8l55m5evbau52mfcdcsb7e4o8f1j.apps.googleusercontent.com',
-      scopes: [
-        'email',
-        'https://www.googleapis.com/auth/spreadsheets',
-        'https://www.googleapis.com/auth/drive.file',
-      ],
     );
     
     // Listen to authentication events
-    GoogleSignIn.instance.authenticationEvents.listen((account) {
-      _currentUser = account;
-      if (account != null) {
-        account.authentication.then((auth) {
-          _currentAuth = auth;
-        });
+    GoogleSignIn.instance.authenticationEvents.listen((event) async {
+      final user = switch (event) {
+        GoogleSignInAuthenticationEventSignIn() => event.user,
+        GoogleSignInAuthenticationEventSignOut() => null,
+      };
+      
+      _currentUser = user;
+      if (user != null) {
+        // Get authorization for scopes
+        final authorization = await user.authorizationClient.authorizationForScopes(_scopes);
+        _currentTokens = authorization?.tokenData;
       } else {
-        _currentAuth = null;
+        _currentTokens = null;
       }
+    }).onError((error) {
+      print('Authentication error: $error');
+      _currentUser = null;
+      _currentTokens = null;
     });
   }
 
@@ -43,10 +53,23 @@ class AuthService {
       // Try lightweight authentication (replaces signInSilently)
       final future = GoogleSignIn.instance.attemptLightweightAuthentication();
       if (future != null) {
-        _currentUser = await future;
-        if (_currentUser != null) {
-          _currentAuth = await _currentUser!.authentication;
+        await future;
+        // The authentication event listener will handle setting _currentUser
+        // Wait a bit for the event to be processed
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        // Ensure we have authorization for our scopes
+        if (_currentUser != null && _currentTokens == null) {
+          final authorization = await _currentUser!.authorizationClient.authorizationForScopes(_scopes);
+          _currentTokens = authorization?.tokenData;
+          
+          // If not authorized for all scopes, request them
+          if (_currentTokens == null) {
+            final newAuth = await _currentUser!.authorizationClient.authorizeScopes(_scopes);
+            _currentTokens = newAuth?.tokenData;
+          }
         }
+        
         return _currentUser;
       }
       return null;
@@ -59,11 +82,25 @@ class AuthService {
   Future<GoogleSignInAccount?> signIn() async {
     try {
       // Use authenticate() for v7
-      _currentUser = await GoogleSignIn.instance.authenticate();
+      await GoogleSignIn.instance.authenticate();
+      // The authentication event listener will handle setting _currentUser
+      // Wait a bit for the event to be processed
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Ensure we have authorization for our scopes
       if (_currentUser != null) {
-        _currentAuth = await _currentUser!.authentication;
+        final authorization = await _currentUser!.authorizationClient.authorizationForScopes(_scopes);
+        _currentTokens = authorization?.tokenData;
+        
+        // If not authorized for all scopes, request them
+        if (_currentTokens == null) {
+          final newAuth = await _currentUser!.authorizationClient.authorizeScopes(_scopes);
+          _currentTokens = newAuth?.tokenData;
+        }
+        
         print('Signed in as: ${_currentUser!.email}');
       }
+      
       return _currentUser;
     } catch (e) {
       print('Sign in error: $e');
@@ -74,18 +111,28 @@ class AuthService {
   Future<void> signOut() async {
     await GoogleSignIn.instance.signOut();
     _currentUser = null;
-    _currentAuth = null;
+    _currentTokens = null;
     _httpClient?.close();
     _httpClient = null;
   }
 
   Future<http.Client?> getAuthenticatedClient() async {
     try {
-      if (_currentAuth == null) {
+      if (_currentTokens == null) {
         if (_currentUser != null) {
-          _currentAuth = await _currentUser!.authentication;
-        } else {
-          print('No user signed in');
+          // Try to get authorization
+          final authorization = await _currentUser!.authorizationClient.authorizationForScopes(_scopes);
+          _currentTokens = authorization?.tokenData;
+          
+          if (_currentTokens == null) {
+            // Request authorization if not available
+            final newAuth = await _currentUser!.authorizationClient.authorizeScopes(_scopes);
+            _currentTokens = newAuth?.tokenData;
+          }
+        }
+        
+        if (_currentTokens == null) {
+          print('No tokens available');
           return null;
         }
       }
@@ -97,14 +144,11 @@ class AuthService {
       final credentials = auth.AccessCredentials(
         auth.AccessToken(
           'Bearer',
-          _currentAuth!.accessTokenString!,
+          _currentTokens!.accessToken,
           DateTime.now().add(const Duration(hours: 1)),
         ),
         null,
-        [
-          'https://www.googleapis.com/auth/spreadsheets',
-          'https://www.googleapis.com/auth/drive.file',
-        ],
+        _scopes,
       );
 
       // Create authenticated HTTP client
