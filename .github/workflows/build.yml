@@ -1,0 +1,143 @@
+name: 🚀 Build Android APK & iOS App
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  build-android:
+    name: 📱 Build Android APK
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 🏗️ Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: ☕ Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        
+    - name: 🔧 Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🔍 Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: 🛠️ Make Gradlew executable
+      run: chmod +x ./android/gradlew
+      
+    - name: 🔨 Build Android APK
+      run: |
+        cd android
+        ./gradlew assembleRelease --no-daemon
+        
+    - name: 📱 Upload Android APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-apk-${{ github.run_number }}
+        path: android/app/build/outputs/apk/release/app-release.apk
+        retention-days: 30
+        
+    - name: 📊 Build Summary
+      run: |
+        echo "### 🎉 Android Build Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **APK Location**: \`android/app/build/outputs/apk/release/app-release.apk\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Number**: ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Download the APK from the **Artifacts** section below to test on your Android device!" >> $GITHUB_STEP_SUMMARY
+
+  build-ios:
+    name: 🍎 Build iOS App  
+    runs-on: macos-latest
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 🏗️ Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 🍎 Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🥥 Install CocoaPods dependencies
+      run: |
+        cd ios
+        pod install --repo-update
+        
+    - name: 🔨 Build iOS App
+      run: |
+        cd ios
+        xcodebuild \
+          -workspace Scan2Sheets.xcworkspace \
+          -scheme Scan2Sheets \
+          -configuration Release \
+          -destination 'generic/platform=iOS Simulator' \
+          -derivedDataPath build \
+          build
+          
+    - name: 📱 Upload iOS Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-build-${{ github.run_number }}
+        path: ios/build/Build/Products/Release-iphonesimulator/
+        retention-days: 30
+        
+    - name: 📊 Build Summary
+      run: |
+        echo "### 🎉 iOS Build Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **iOS Build**: Simulator-compatible build created" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Number**: ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Download the iOS build from **Artifacts** to test on iOS Simulator!" >> $GITHUB_STEP_SUMMARY
+
+  build-summary:
+    name: 📋 Build Summary
+    runs-on: ubuntu-latest
+    needs: [build-android, build-ios]
+    if: always()
+    
+    steps:
+    - name: 📊 Overall Build Status
+      run: |
+        echo "### 🚀 Scan2Sheets Build Complete!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| 📱 Android | ${{ needs.build-android.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| 🍎 iOS | ${{ needs.build-ios.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Ready for testing!** Download the artifacts above to test on your devices." >> $GITHUB_STEP_SUMMARY
