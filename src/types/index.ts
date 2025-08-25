@@ -2,7 +2,7 @@
 export type RootStackParamList = {
   Auth: undefined;
   SheetSelect: undefined;
-  Scanner: undefined;
+  Scanner: { selectedSheet?: GoogleSheetInfo };
 };
 
 // Google OAuth types
@@ -30,4 +30,19 @@ export interface ContactInfo {
   // Extensible for future fields
   company?: string;
   phone?: string;
+}
+
+// Google Sheets types
+export interface GoogleSheetInfo {
+  id: string;
+  title: string;
+  url: string;
+  lastModified: string; // ISO string for navigation serialization
+}
+
+export interface GoogleSheetRow {
+  Name: string;
+  Email: string;
+  Phone: string;
+  'Scanned At': string;
 }
