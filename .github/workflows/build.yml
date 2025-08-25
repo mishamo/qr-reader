@@ -115,34 +115,8 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-node-modules-
         
-    - name: 🥥 Cache CocoaPods
-      uses: actions/cache@v4
-      with:
-        path: |
-          ios/Pods
-          ~/Library/Caches/CocoaPods
-          ~/.cocoapods
-        key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-pods-
-        
-    - name: 💎 Cache Ruby gems
-      uses: actions/cache@v4
-      with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-gems-
-        
-    - name: 🔨 Cache Xcode build cache  
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/Library/Developer/Xcode/DerivedData
-          ios/build
-        key: ${{ runner.os }}-xcode-${{ hashFiles('ios/**/*.swift', 'ios/**/*.h', 'ios/**/*.m', 'ios/Podfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-xcode-
+    # Temporarily disable complex caching to get a working build first
+    # Will re-enable optimizations once basic build works
         
     - name: 📦 Install dependencies (fast)
       run: |
@@ -153,36 +127,35 @@ jobs:
           npm ci --no-audit
         fi
       
-    - name: 🥥 Install CocoaPods dependencies (fast)
+    - name: 🥥 Install CocoaPods dependencies (robust)
       run: |
-        cd ios
-        if [ -d "Pods" ] && [ -f "Podfile.lock" ]; then
-          echo "Using cached Pods with deployment mode"
-          pod install --deployment
-        else
-          echo "Installing Pods with repo update"
-          pod install --repo-update
-        fi
+        # Ensure CocoaPods is installed and up to date
+        gem install cocoapods --no-document
         
-    - name: 🚀 Build iOS App (optimized)
+        cd ios
+        # Clear any problematic cached state
+        rm -rf Pods/ Podfile.lock
+        
+        # Fresh install with verbose output for debugging
+        echo "Installing CocoaPods dependencies..."
+        pod install --repo-update --verbose
+        
+    - name: 🚀 Build iOS App (simplified)
       run: |
         cd ios
-        # Build for simulator only (faster than device build)
+        # Simple build for iOS Simulator
         xcodebuild \
           -workspace Scan2Sheets.xcworkspace \
           -scheme Scan2Sheets \
-          -configuration Release \
-          -destination 'generic/platform=iOS Simulator' \
-          -derivedDataPath build \
-          -enableCodeCoverage NO \
-          -quiet \
-          build
+          -configuration Debug \
+          -destination 'platform=iOS Simulator,name=iPhone 15' \
+          clean build
           
     - name: 📱 Upload iOS Build
       uses: actions/upload-artifact@v4
       with:
         name: ios-build-${{ github.run_number }}
-        path: ios/build/Build/Products/Release-iphonesimulator/
+        path: ~/Library/Developer/Xcode/DerivedData/*/Build/Products/Debug-iphonesimulator/
         retention-days: 30
         
     - name: 📊 Build Summary
