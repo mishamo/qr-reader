@@ -1,97 +1,228 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# 📱 Scan2Sheets
 
-# Getting Started
+**Professional conference lead collection made simple.**
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+Scan2Sheets is a React Native mobile app that allows you to scan QR codes containing contact information and automatically add them to Google Sheets. Perfect for conferences, networking events, trade shows, and any scenario where you need to quickly collect and organize contact data.
 
-## Step 1: Start Metro
+[![Build Status](https://github.com/mishamo/scan2sheets/actions/workflows/build.yml/badge.svg)](https://github.com/mishamo/scan2sheets/actions)
+[![Release](https://img.shields.io/github/v/release/mishamo/scan2sheets)](https://github.com/mishamo/scan2sheets/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## ✨ Features
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+🔥 **Core Functionality:**
+- **📱 QR Code Scanner**: High-performance camera-based QR code scanning
+- **📊 Google Sheets Integration**: Seamless integration with your Google Sheets
+- **🔐 Secure Authentication**: Google OAuth 2.0 for safe access to your data
+- **📋 Multiple QR Formats**: Support for JSON, CSV, and vCard contact formats
+- **🎨 Professional UI**: Material Design with custom branding
 
-```sh
-# Using npm
-npm start
+⚡ **Smart Features:**
+- **Auto-Skip Authentication**: Remembers your login status
+- **Sheet Selection**: Choose from existing sheets or create new ones
+- **Real-time Sync**: Contacts appear immediately in your Google Sheets
+- **Error Handling**: Robust error recovery and user feedback
+- **Offline-First**: Graceful handling of network issues
 
-# OR using Yarn
-yarn start
+## 📱 Installation
+
+### Option 1: Download APK (Recommended)
+1. Go to [Releases](https://github.com/mishamo/scan2sheets/releases/latest)
+2. Download the latest `app-release.apk`
+3. Enable "Install from Unknown Sources" in Android settings
+4. Install the APK and grant camera permissions
+5. Sign in with your Google account and start scanning!
+
+### Option 2: Build from Source
+```bash
+# Clone the repository
+git clone https://github.com/mishamo/scan2sheets.git
+cd scan2sheets
+
+# Install dependencies
+npm install
+
+# For Android
+npx react-native run-android
+
+# For iOS (requires Xcode and CocoaPods)
+cd ios && pod install && cd ..
+npx react-native run-ios
 ```
 
-## Step 2: Build and run your app
+## 🚀 Usage
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### 1. **Authentication**
+- Launch the app and sign in with your Google account
+- Grant permissions for Google Sheets and camera access
 
-### Android
+### 2. **Select or Create a Sheet**
+- Choose from your existing Google Sheets
+- Or create a new sheet with a custom name
+- Sheet selection is remembered for future sessions
 
-```sh
-# Using npm
-npm run android
+### 3. **Scan QR Codes**
+- Point your camera at a QR code containing contact information
+- The app automatically detects and parses the contact data
+- Review the parsed information before adding to your sheet
 
-# OR using Yarn
-yarn android
+### 4. **View Results**
+- Contacts are instantly added to your selected Google Sheet
+- Tap "View Sheet" to open your Google Sheet in the browser
+- Track who scanned each contact and when
+
+## 📋 Supported QR Code Formats
+
+Scan2Sheets supports multiple QR code formats for maximum compatibility:
+
+### **JSON Format** (Recommended)
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com", 
+  "phone": "123-456-7890"
+}
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+### **Simple CSV Format**
+```
+John Doe,john@example.com,123-456-7890
 ```
 
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
+### **vCard Format**
+```
+BEGIN:VCARD
+VERSION:3.0
+FN:John Doe
+EMAIL:john@example.com
+TEL:123-456-7890
+END:VCARD
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+## 📊 Google Sheets Structure
 
-```sh
-# Using npm
-npm run ios
+When you create a new sheet or scan contacts, the following columns are automatically created:
 
-# OR using Yarn
-yarn ios
+| Name | Email | Phone | Scanned By | Scanned At |
+|------|-------|-------|------------|------------|
+| John Doe | john@example.com | 123-456-7890 | user@example.com | 8/25/2025, 2:30:15 PM |
+
+## 🛠️ Development
+
+### Prerequisites
+- Node.js 18+ 
+- React Native CLI
+- Android Studio (for Android)
+- Xcode (for iOS)
+- Google Cloud Console project with Sheets API enabled
+
+### Setup
+```bash
+# Clone and install
+git clone https://github.com/mishamo/scan2sheets.git
+cd scan2sheets
+npm install
+
+# Android setup
+npx react-native run-android
+
+# iOS setup  
+cd ios && pod install && cd ..
+npx react-native run-ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Google Cloud Configuration
+1. Create a Google Cloud Console project
+2. Enable Google Sheets API and Google Drive API
+3. Create OAuth 2.0 credentials (Web and Android)
+4. Configure OAuth consent screen
+5. Add your SHA-1 fingerprints for Android
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+Detailed setup instructions in [PLAN.md](PLAN.md).
 
-## Step 3: Modify your app
+## 🚀 CI/CD & Releases
 
-Now that you have successfully run the app, let's make changes!
+### Automated Builds
+Every push triggers automated builds for both Android and iOS:
+- **Android APK**: Built with optimized Gradle caching (~3-5 minutes)
+- **iOS App**: Built for iOS Simulator testing (~20 minutes)
+- **Artifacts**: Available for download from GitHub Actions
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+### Creating Releases
+Releases are automatically created when version tags are pushed:
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+```bash
+# Create and push a version tag
+git tag v1.0.0
+git push origin v1.0.0
+```
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+This automatically:
+1. Builds optimized Android APK
+2. Creates GitHub release with professional description  
+3. Uploads APK as downloadable asset
+4. Generates comprehensive release notes
 
-## Congratulations! :tada:
+## 🏗️ Architecture
 
-You've successfully run and modified your React Native App. :partying_face:
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Auth Screen   │───▶│  Sheet Select   │───▶│  Scanner Screen │
+│                 │    │     Screen      │    │                 │
+│  Google Login   │    │ List/Create     │    │  QR Scanner     │
+│                 │    │   Sheets        │    │ Add to Sheet    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Google APIs Integration                      │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐  │
+│  │  Google Auth    │ │ Google Drive    │ │ Google Sheets   │  │
+│  │   OAuth2.0      │ │   List Sheets   │ │  Read/Write     │  │
+│  └─────────────────┘ └─────────────────┘ └─────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-### Now what?
+## 📦 Built With
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+- **React Native 0.81** - Cross-platform mobile framework
+- **@react-native-google-signin/google-signin** - Google OAuth authentication  
+- **react-native-camera-kit** - Camera and QR code scanning
+- **react-native-paper** - Material Design UI components
+- **Google Sheets API v4** - Direct REST API integration
+- **Google Drive API v3** - Sheet listing and management
 
-# Troubleshooting
+## 🤝 Contributing
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-# Learn More
+## 📄 License
 
-To learn more about React Native, take a look at the following resources:
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## 🙏 Acknowledgments
+
+- Built with [Claude Code](https://claude.ai/code) - AI-powered development assistant
+- Icons and design inspiration from Material Design
+- QR code scanning powered by react-native-camera-kit
+- Google APIs for seamless Sheets integration
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/mishamo/scan2sheets/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/mishamo/scan2sheets/discussions)
+- **Documentation**: [Project Wiki](https://github.com/mishamo/scan2sheets/wiki)
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the conference and networking community**
+
+[Download Latest Release](https://github.com/mishamo/scan2sheets/releases/latest) • [View Documentation](PLAN.md) • [Report Bug](https://github.com/mishamo/scan2sheets/issues)
+
+</div>
