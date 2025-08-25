@@ -92,6 +92,7 @@ export class GoogleSheetsService {
                 { userEnteredValue: { stringValue: 'Name' } },
                 { userEnteredValue: { stringValue: 'Email' } },
                 { userEnteredValue: { stringValue: 'Phone' } },
+                { userEnteredValue: { stringValue: 'Scanned By' } },
                 { userEnteredValue: { stringValue: 'Scanned At' } },
               ],
             }],
@@ -133,6 +134,11 @@ export class GoogleSheetsService {
   static async addContactToSheet(sheetId: string, contact: ContactInfo): Promise<void> {
     try {
       const headers = await this.getAuthHeaders();
+      
+      // Get current user info for "Scanned By" column
+      const { AuthService } = await import('./auth');
+      const currentUser = await AuthService.getCurrentUser();
+      const scannedBy = currentUser?.email || 'Unknown';
 
       // Prepare row data
       const values = [
@@ -140,6 +146,7 @@ export class GoogleSheetsService {
           contact.name,
           contact.email,
           contact.phone || '',
+          scannedBy,
           new Date().toLocaleString(),
         ],
       ];
@@ -187,12 +194,18 @@ export class GoogleSheetsService {
   static async addContactsToSheet(sheetId: string, contacts: ContactInfo[]): Promise<void> {
     try {
       const headers = await this.getAuthHeaders();
+      
+      // Get current user info for "Scanned By" column
+      const { AuthService } = await import('./auth');
+      const currentUser = await AuthService.getCurrentUser();
+      const scannedBy = currentUser?.email || 'Unknown';
 
       // Prepare multiple rows of data
       const values = contacts.map(contact => [
         contact.name,
         contact.email,
         contact.phone || '',
+        scannedBy,
         new Date().toLocaleString(),
       ]);
 

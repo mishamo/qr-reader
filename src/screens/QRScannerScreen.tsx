@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, StyleSheet, Alert, Text, PermissionsAndroid, Platform } from 'react-native';
+import { View, StyleSheet, Alert, Text, PermissionsAndroid, Platform, Linking } from 'react-native';
 import { Camera } from 'react-native-camera-kit';
 import { Button, Card, Title } from 'react-native-paper';
 import type { RouteProp } from '@react-navigation/native';
@@ -138,9 +138,13 @@ export const QRScannerScreen: React.FC<QRScannerScreenProps> = ({ navigation, ro
         '✅ Contact Added!',
         `${contact.name} has been successfully added to "${selectedSheet.title}".`,
         [
-          { text: '📊 View Sheet', onPress: () => {
-            // TODO: Open sheet URL in browser
-            console.log('Would open:', selectedSheet.url);
+          { text: '📊 View Sheet', onPress: async () => {
+            try {
+              await Linking.openURL(selectedSheet.url);
+            } catch (error) {
+              console.error('Failed to open sheet URL:', error);
+              Alert.alert('Error', 'Failed to open Google Sheet. Please try again.');
+            }
           }},
           { text: '🔄 Scan Another', onPress: () => resetScanner() }
         ]
