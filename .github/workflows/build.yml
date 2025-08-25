@@ -156,10 +156,11 @@ jobs:
     - name: 🥥 Install CocoaPods dependencies (fast)
       run: |
         cd ios
-        if [ -d "Pods" ]; then
-          echo "Using cached Pods"
+        if [ -d "Pods" ] && [ -f "Podfile.lock" ]; then
+          echo "Using cached Pods with deployment mode"
           pod install --deployment
         else
+          echo "Installing Pods with repo update"
           pod install --repo-update
         fi
         
