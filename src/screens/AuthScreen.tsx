@@ -2,9 +2,14 @@ import React from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { Button, Card, Title, Text } from 'react-native-paper';
 import { AuthService } from '../services/auth';
-import type { GoogleUserInfo } from '../types';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { GoogleUserInfo, RootStackParamList } from '../types';
 
-export const AuthScreen: React.FC = () => {
+type AuthScreenProps = {
+  navigation: StackNavigationProp<RootStackParamList, 'Auth'>;
+};
+
+export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
   const handleGoogleSignIn = async () => {
     try {
       const user: GoogleUserInfo | null = await AuthService.signIn();
@@ -16,7 +21,7 @@ export const AuthScreen: React.FC = () => {
           [{ text: 'OK' }]
         );
         console.log('User signed in:', user);
-        // TODO: Navigate to sheet selection screen
+        navigation.navigate('SheetSelect');
       } else {
         Alert.alert('Cancelled', 'Sign in was cancelled');
       }
@@ -37,7 +42,7 @@ export const AuthScreen: React.FC = () => {
       [{ text: 'OK' }]
     );
     console.log('Test mode activated');
-    // TODO: Navigate to sheet selection screen with mock user
+    navigation.navigate('SheetSelect');
   };
 
   return (
