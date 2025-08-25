@@ -3,8 +3,9 @@ import { View, StyleSheet, Text, FlatList, Alert } from 'react-native';
 import { Button, Card, Title, Paragraph, ActivityIndicator, TextInput, Modal, Portal } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RootStackParamList, GoogleSheetInfo } from '../types';
+import type { RootStackParamList, GoogleSheetInfo, GoogleUserInfo } from '../types';
 import { GoogleSheetsService } from '../services/googleSheets';
+import { AuthService } from '../services/auth';
 
 type SheetSelectScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'SheetSelect'>;
@@ -17,6 +18,7 @@ export const SheetSelectScreen: React.FC<SheetSelectScreenProps> = ({ navigation
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newSheetTitle, setNewSheetTitle] = useState('');
   const [creating, setCreating] = useState(false);
+  const [currentUser, setCurrentUser] = useState<GoogleUserInfo | null>(null);
 
   // Load sheets on component mount
   useEffect(() => {
@@ -27,6 +29,20 @@ export const SheetSelectScreen: React.FC<SheetSelectScreenProps> = ({ navigation
   useEffect(() => {
     loadStoredSelection();
   }, [loadStoredSelection]);
+
+  // Load current user info
+  useEffect(() => {
+    loadCurrentUser();
+  }, []);
+
+  const loadCurrentUser = async () => {
+    try {
+      const user = await AuthService.getCurrentUser();
+      setCurrentUser(user);
+    } catch (error) {
+      console.error('Failed to load current user:', error);
+    }
+  };
 
   const loadStoredSelection = useCallback(async () => {
     try {
@@ -143,7 +159,9 @@ export const SheetSelectScreen: React.FC<SheetSelectScreenProps> = ({ navigation
     <View style={styles.container}>
       <Card style={styles.headerCard}>
         <Card.Content>
-          <Title style={styles.title}>📊 Select Google Sheet</Title>
+          <Title style={styles.title}>
+            {currentUser ? `Hi ${currentUser.name}! 📊` : '📊 Select Google Sheet'}
+          </Title>
           <Paragraph style={styles.subtitle}>
             Choose a Google Sheet to store your scanned contacts, or create a new one.
           </Paragraph>

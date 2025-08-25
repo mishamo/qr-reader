@@ -15,11 +15,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
       const user: GoogleUserInfo | null = await AuthService.signIn();
       
       if (user) {
-        Alert.alert(
-          'Success!',
-          `Welcome ${user.name}!\nEmail: ${user.email}`,
-          [{ text: 'OK' }]
-        );
         console.log('User signed in:', user);
         navigation.navigate('SheetSelect');
       } else {
@@ -29,7 +24,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
       console.error('Sign in error:', error);
       Alert.alert(
         'Error',
-        'Google OAuth not configured yet. This will work once we set up Google Cloud credentials.',
+        'Failed to sign in with Google. Please check your connection and try again.',
         [{ text: 'OK' }]
       );
     }
