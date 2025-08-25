@@ -54,7 +54,6 @@ export const AuthScreen: React.FC = () => {
               mode="contained"
               onPress={handleGoogleSignIn}
               style={styles.googleButton}
-              icon="google"
             >
               Sign in with Google
             </Button>
