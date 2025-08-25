@@ -9,18 +9,11 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthScreen } from './src/screens/AuthScreen';
+import { SheetSelectScreen } from './src/screens/SheetSelectScreen';
+import { QRScannerScreen } from './src/screens/QRScannerScreen';
 import type { RootStackParamList } from './src/types';
 
 const Stack = createStackNavigator<RootStackParamList>();
-
-// Placeholder screens for navigation structure
-const SheetSelectScreen = () => {
-  return null; // TODO: Implement sheet selection screen
-};
-
-const ScannerScreen = () => {
-  return null; // TODO: Implement QR scanner screen  
-};
 
 function App(): React.JSX.Element {
   return (
@@ -53,7 +46,7 @@ function App(): React.JSX.Element {
             />
             <Stack.Screen
               name="Scanner"
-              component={ScannerScreen}
+              component={QRScannerScreen}
               options={{
                 title: 'QR Scanner',
               }}
