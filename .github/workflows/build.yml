@@ -94,73 +94,53 @@ jobs:
         echo "Download the APK from the **Artifacts** section below to test on your Android device!" >> $GITHUB_STEP_SUMMARY
 
   build-ios:
-    name: 🍎 Build iOS App (Fast)
-    runs-on: macos-13 # Use specific macOS version for consistency
+    name: 🍎 Build iOS App  
+    runs-on: macos-latest
     
     steps:
     - name: 📥 Checkout repository
       uses: actions/checkout@v4
       
-    - name: 🏗️ Setup Node.js with enhanced caching
+    - name: 🏗️ Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
         
-    - name: ⚡ Cache node_modules
-      uses: actions/cache@v4
+    - name: 🍎 Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
       with:
-        path: node_modules
-        key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-modules-
+        xcode-version: latest-stable
         
-    # Temporarily disable complex caching to get a working build first
-    # Will re-enable optimizations once basic build works
-        
-    - name: 📦 Install dependencies (fast)
-      run: |
-        if [ -d "node_modules" ]; then
-          echo "Using cached node_modules"
-          npm ci --prefer-offline --no-audit
-        else
-          npm ci --no-audit
-        fi
+    - name: 📦 Install dependencies
+      run: npm ci
       
-    - name: 🥥 Install CocoaPods dependencies (robust)
-      run: |
-        # Ensure CocoaPods is installed and up to date
-        gem install cocoapods --no-document
-        
-        cd ios
-        # Clear any problematic cached state
-        rm -rf Pods/ Podfile.lock
-        
-        # Fresh install with verbose output for debugging
-        echo "Installing CocoaPods dependencies..."
-        pod install --repo-update --verbose
-        
-    - name: 🚀 Build iOS App (simplified)
+    - name: 🥥 Install CocoaPods dependencies
       run: |
         cd ios
-        # Simple build for iOS Simulator
+        pod install --repo-update
+        
+    - name: 🔨 Build iOS App
+      run: |
+        cd ios
         xcodebuild \
           -workspace Scan2Sheets.xcworkspace \
           -scheme Scan2Sheets \
-          -configuration Debug \
-          -destination 'platform=iOS Simulator,name=iPhone 15' \
-          clean build
+          -configuration Release \
+          -destination 'generic/platform=iOS Simulator' \
+          -derivedDataPath build \
+          build
           
     - name: 📱 Upload iOS Build
       uses: actions/upload-artifact@v4
       with:
         name: ios-build-${{ github.run_number }}
-        path: ~/Library/Developer/Xcode/DerivedData/*/Build/Products/Debug-iphonesimulator/
+        path: ios/build/Build/Products/Release-iphonesimulator/
         retention-days: 30
         
     - name: 📊 Build Summary
       run: |
-        echo "### ⚡ iOS Build Completed (Optimized)!" >> $GITHUB_STEP_SUMMARY
+        echo "### 🎉 iOS Build Completed Successfully!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "- **iOS Build**: Simulator-compatible build created" >> $GITHUB_STEP_SUMMARY
         echo "- **Build Number**: ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
@@ -169,7 +149,7 @@ jobs:
         echo "Download the iOS build from **Artifacts** to test on iOS Simulator!" >> $GITHUB_STEP_SUMMARY
 
   build-summary:
-    name: 📋 Fast Build Summary
+    name: 📋 Build Summary
     runs-on: ubuntu-latest
     needs: [build-android, build-ios]
     if: always()
@@ -177,15 +157,11 @@ jobs:
     steps:
     - name: 📊 Overall Build Status
       run: |
-        echo "### ⚡ Scan2Sheets Fast Build Complete!" >> $GITHUB_STEP_SUMMARY
+        echo "### 🚀 Scan2Sheets Build Complete!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "| Platform | Status | Optimization |" >> $GITHUB_STEP_SUMMARY
-        echo "|----------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
-        echo "| 📱 Android | ${{ needs.build-android.result == 'success' && '✅ Success' || '❌ Failed' }} | Enhanced Gradle caching, parallel builds |" >> $GITHUB_STEP_SUMMARY
-        echo "| 🍎 iOS | ${{ needs.build-ios.result == 'success' && '✅ Success' || '❌ Failed' }} | CocoaPods & Xcode DerivedData caching |" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**⚡ Speed Improvements:**" >> $GITHUB_STEP_SUMMARY
-        echo "- Android: ~3-5 minutes (down from 14+ minutes)" >> $GITHUB_STEP_SUMMARY  
-        echo "- iOS: ~5-8 minutes (down from 20+ minutes)" >> $GITHUB_STEP_SUMMARY
+        echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| 📱 Android | ${{ needs.build-android.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| 🍎 iOS | ${{ needs.build-ios.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Ready for testing!** Download the artifacts above to test on your devices." >> $GITHUB_STEP_SUMMARY
