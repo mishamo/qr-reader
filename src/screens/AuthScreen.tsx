@@ -35,15 +35,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
     }
   };
 
-  const handleTestMode = () => {
-    Alert.alert(
-      'Test Mode',
-      'This will simulate successful authentication for testing',
-      [{ text: 'OK' }]
-    );
-    console.log('Test mode activated');
-    navigation.navigate('SheetSelect');
-  };
 
   return (
     <View style={styles.container}>
@@ -61,14 +52,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
               style={styles.googleButton}
             >
               Sign in with Google
-            </Button>
-            
-            <Button
-              mode="outlined"
-              onPress={handleTestMode}
-              style={styles.testButton}
-            >
-              Test Mode (No Auth)
             </Button>
           </View>
         </Card.Content>
@@ -104,9 +87,6 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   googleButton: {
-    paddingVertical: 8,
-  },
-  testButton: {
     paddingVertical: 8,
   },
 });
