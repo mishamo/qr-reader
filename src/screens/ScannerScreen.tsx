@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, Text } from 'react-native';
+import { View, StyleSheet, Alert, Text, PermissionsAndroid, Platform } from 'react-native';
 import { Button, Card, Title } from 'react-native-paper';
-import { Camera, useCameraDevices } from 'react-native-vision-camera';
+import QRCodeScanner from 'react-native-qrcode-scanner';
 import type { ContactInfo } from '../types';
 
 export const ScannerScreen: React.FC = () => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scannedData, setScannedData] = useState<ContactInfo | null>(null);
-  const devices = useCameraDevices();
-  const device = devices.back;
 
   useEffect(() => {
     checkCameraPermission();
@@ -16,12 +14,21 @@ export const ScannerScreen: React.FC = () => {
 
   const checkCameraPermission = async () => {
     try {
-      const permission = await Camera.getCameraPermissionStatus();
-      if (permission === 'granted') {
-        setHasPermission(true);
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Camera Permission',
+            message: 'Scan2Sheets needs access to your camera to scan QR codes.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
       } else {
-        const newPermission = await Camera.requestCameraPermission();
-        setHasPermission(newPermission === 'granted');
+        // iOS permissions are handled by the library automatically
+        setHasPermission(true);
       }
     } catch (error) {
       console.error('Permission error:', error);
@@ -145,88 +152,82 @@ export const ScannerScreen: React.FC = () => {
     );
   }
 
-  if (!device) {
+  const onSuccess = (e: any) => {
+    handleQRCodeScanned(e.data);
+  };
+
+  if (scannedData) {
     return (
       <View style={styles.container}>
-        <Text>No camera device found</Text>
+        <Card style={styles.card}>
+          <Card.Content>
+            <Title>Scanned Successfully!</Title>
+            <Text style={styles.message}>
+              Name: {scannedData.name}{'\n'}
+              Email: {scannedData.email}
+              {scannedData.phone && `\nPhone: ${scannedData.phone}`}
+            </Text>
+            <Button mode="contained" onPress={() => addToSheet(scannedData)} style={styles.button}>
+              Add to Sheet
+            </Button>
+            <Button mode="outlined" onPress={() => setScannedData(null)} style={styles.button}>
+              Scan Another
+            </Button>
+          </Card.Content>
+        </Card>
       </View>
     );
   }
 
-  const handleCodeScanned = (codes: any[]) => {
-    if (codes.length > 0) {
-      handleQRCodeScanned(codes[0].value || '');
-    }
-  };
-
   return (
-    <View style={styles.container}>
-      <Camera
-        style={styles.camera}
-        device={device}
-        isActive={!scannedData}
-        codeScanner={{
-          codeTypes: ['qr', 'ean-13'],
-          onCodeScanned: handleCodeScanned,
-        }}
-      />
-      
-      <View style={styles.overlay}>
-        <View style={styles.scanFrame} />
-        <Text style={styles.instructionText}>
-          Position QR code within the frame to scan
+    <QRCodeScanner
+      onRead={onSuccess}
+      flashMode={false}
+      topContent={
+        <Text style={styles.centerText}>
+          <Text style={styles.textBold}>Scan2Sheets</Text>{'\n'}
+          Position QR code in the center of the screen
         </Text>
-        
-        <Text style={styles.formatText}>
-          Supported formats:{'\n'}
-          • JSON: {`{"name":"John Doe","email":"john@example.com"}`}{'\n'}
-          • Simple: John Doe,john@example.com,+1234567890{'\n'}
-          • vCard format
-        </Text>
-      </View>
-    </View>
+      }
+      bottomContent={
+        <View>
+          <Text style={styles.formatText}>
+            Supported formats:{'\n'}
+            • JSON: {`{"name":"John Doe","email":"john@example.com"}`}{'\n'}
+            • Simple: John Doe,john@example.com,+1234567890{'\n'}
+            • vCard format
+          </Text>
+        </View>
+      }
+    />
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
-  },
-  camera: {
-    flex: 1,
-  },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
     justifyContent: 'center',
+    padding: 16,
+    backgroundColor: '#f5f5f5',
   },
-  scanFrame: {
-    width: 250,
-    height: 250,
-    borderWidth: 2,
-    borderColor: 'white',
-    borderRadius: 10,
-    backgroundColor: 'transparent',
-  },
-  instructionText: {
-    color: 'white',
-    fontSize: 16,
+  centerText: {
+    flex: 1,
+    fontSize: 18,
+    padding: 32,
+    color: '#777',
     textAlign: 'center',
-    marginTop: 20,
-    paddingHorizontal: 20,
+  },
+  textBold: {
+    fontWeight: '500',
+    color: '#000',
+    fontSize: 20,
   },
   formatText: {
-    color: 'white',
     fontSize: 12,
     textAlign: 'center',
-    marginTop: 40,
-    paddingHorizontal: 20,
-    opacity: 0.8,
+    padding: 20,
+    color: '#666',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   card: {
     margin: 16,
@@ -234,7 +235,8 @@ const styles = StyleSheet.create({
   },
   message: {
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: 'left',
+    fontSize: 16,
   },
   button: {
     marginTop: 8,
