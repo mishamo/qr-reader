@@ -196,28 +196,40 @@ After testing multiple QR scanning solutions for React Native 0.81 compatibility
    - Full-screen camera with overlay instructions and format information
    - Professional scanning frame and visual feedback
 
-### Phase 5: Testing & Deployment
-**Duration**: 1-2 days
+### Phase 5: CI/CD & Cross-Platform Deployment 🟡 NEXT PHASE
+**Duration**: 2-3 days
 
-1. **Testing**
-   - Unit tests for data parsing
-   - Integration tests for Sheets API
-   - Manual testing on Android device
+1. **Repository Cleanup**
+   - Wipe out all current releases in the repo (from old project)
+   - Clean up any legacy release artifacts or tags
+   - Prepare repository for fresh release cycle
+
+2. **GitHub Actions - Android Build**
+   - Add GitHub Action workflow to automatically build Android APK
+   - Configure Android signing for release builds
+   - Set up artifact uploading for easy APK download and testing
+   - Trigger builds on main branch pushes and pull requests
+   - Include build status badges in README
+
+3. **iOS Development Setup**
+   - Set up local iOS testing capability with Xcode Simulator
+   - Configure React Native for iOS development
+   - Test app functionality on iOS Simulator locally
+   - Verify Google Sign-In and camera functionality on iOS
+
+4. **GitHub Actions - iOS Build**
+   - Add iOS app build to existing GitHub Action workflow
+   - Configure iOS code signing and provisioning profiles
+   - Set up cross-platform build matrix (Android + iOS)
+   - Generate .ipa files for iOS distribution and testing
+   - Handle iOS-specific build requirements and dependencies
+
+5. **Cross-Platform Testing**
+   - Manual testing on Android device via APK
+   - Manual testing on iOS Simulator/device
+   - Verify feature parity between Android and iOS builds
+   - Test Google Sheets integration on both platforms
    - Edge case handling (no internet, permission denials)
-
-2. **Android APK Build**
-   ```bash
-   cd android
-   ./gradlew assembleRelease
-   ```
-   - Configure signing for release builds
-   - Generate APK for testing
-   - Test installation on target devices
-
-3. **Documentation**
-   - User setup instructions
-   - Developer documentation
-   - Troubleshooting guide
 
 ## Key Configuration Files
 
@@ -329,14 +341,62 @@ class QRParser {
 - ✅ **Stable performance during conference usage** - Comprehensive error handling and user feedback systems
 - ✅ **Easy APK installation and setup for users** - Ready for deployment with straightforward configuration
 
-## Final Timeline - PROJECT COMPLETED ✅
+## Updated Timeline - CORE MVP COMPLETED, DEPLOYMENT IN PROGRESS ✅🟡
 
-**Total**: 8 days for complete MVP *(FINISHED August 2025)*
+**Total**: 10-11 days for complete production-ready app *(In Progress August 2025)*
 - ✅ **Setup & Auth**: 2 days *(COMPLETED December 2024)*
 - ✅ **QR Scanner**: 3 days *(COMPLETED December 2024 - Required extra effort due to RN 0.81 compatibility)*  
 - ✅ **Google Sheets Integration**: 3 days *(COMPLETED August 2025)*
 - ✅ **Polish & UI/UX**: 1 day *(COMPLETED August 2025)*
+- 🟡 **CI/CD & Cross-Platform Deployment**: 2-3 days *(NEXT PHASE - August 2025)*
 
-**Final Status**: All phases complete - fully functional conference lead collection app with Google Sheets integration
+**Current Status**: Core functionality complete and polished - now adding automated builds and cross-platform deployment for production release
+
+## Deployment Workflow (Phase 5 Details)
+
+### 1. Repository Cleanup Tasks
+- Delete all existing releases and tags from the old project
+- Remove any legacy build artifacts or configuration files
+- Clean up release history to start fresh with Scan2Sheets releases
+
+### 2. GitHub Actions Android Workflow
+```yaml
+# .github/workflows/build-android.yml
+name: Build Android APK
+on: [push, pull_request]
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - Checkout code
+      - Setup Node.js and Java
+      - Install dependencies
+      - Build Android APK
+      - Upload APK as artifact
+```
+
+### 3. iOS Development Setup
+- Install Xcode and iOS Simulator
+- Configure React Native iOS development environment
+- Test Google Sign-In iOS SDK integration
+- Verify camera functionality on iOS Simulator
+
+### 4. GitHub Actions iOS Workflow
+```yaml
+# Extended workflow for iOS builds
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - Setup Xcode and iOS dependencies
+      - Build iOS app (.ipa)
+      - Upload iOS artifacts
+```
+
+### 5. Testing Strategy
+- **Android**: Direct APK installation on physical device
+- **iOS**: Testing via Simulator and TestFlight (future)
+- **Cross-platform**: Verify feature parity and Google Sheets integration
+- **CI/CD**: Automated builds on every push to ensure stability
 
 This plan addresses your previous OAuth challenges with proven, modern solutions while providing a solid foundation for future enhancements.
